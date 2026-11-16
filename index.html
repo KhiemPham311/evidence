@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f59a5f">
+<title>Evidence doučování SEA-l</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Paleta podle sea-l.cz: teplý přechod od bílé k mangově oranžové, uhlové tlačítka, šedá kresba. */
+:root{
+  --bg:#fff8f1; --surface:#ffffff; --line:#eddfd1; --ink:#2b2724; --muted:#6e645a;
+  --brand:#ef7d3c; --brand-ink:#b4501a; --mango:#f3b229; --cream:#fbefc6; --soft:#fde6d3;
+  --btn:#333333; --btn-ink:#ffffff;
+  --good:#2c7a4b; --good-bg:#e2f2e7; --warn:#935f00; --warn-bg:#fdefc9; --bad:#b0362e; --bad-bg:#fbe0dc; --idle-bg:#f2ebe4;
+  --head:linear-gradient(115deg,#ffffff 0%,#fde9d8 45%,#f9c08f 80%,#f59a5f 100%);
+  --font:"Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#1c1916; --surface:#25211d; --line:#3a332c; --ink:#f3ece4; --muted:#b4a797;
+    --brand:#f39a5e; --brand-ink:#f6a875; --mango:#f3b229; --cream:#3a3020; --soft:#3b2a1f;
+    --btn:#f3ece4; --btn-ink:#1c1916;
+    --good:#74d29b; --good-bg:#183526; --warn:#f2c35a; --warn-bg:#3b2f12; --bad:#f28c82; --bad-bg:#40201c; --idle-bg:#2e2924;
+    --head:linear-gradient(115deg,#25211d 0%,#3a2a1f 55%,#6b3a1d 100%);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1c1916; --surface:#25211d; --line:#3a332c; --ink:#f3ece4; --muted:#b4a797;
+  --brand:#f39a5e; --brand-ink:#f6a875; --mango:#f3b229; --cream:#3a3020; --soft:#3b2a1f;
+  --btn:#f3ece4; --btn-ink:#1c1916;
+  --good:#74d29b; --good-bg:#183526; --warn:#f2c35a; --warn-bg:#3b2f12; --bad:#f28c82; --bad-bg:#40201c; --idle-bg:#2e2924;
+  --head:linear-gradient(115deg,#25211d 0%,#3a2a1f 55%,#6b3a1d 100%);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.5;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--mango);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+header{background:var(--head);border-bottom:1px solid var(--line)}
+.head-in,.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 0 12px;flex-wrap:wrap}
+.logo{width:42px;height:42px;border-radius:50%;background:var(--btn);color:var(--btn-ink);display:grid;place-items:center;font-weight:700;font-size:.8rem;letter-spacing:.04em;flex:none}
+.title h1{font-size:1.35rem;font-weight:600;margin:0;letter-spacing:.02em}
+.title p{margin:0;color:var(--muted);font-size:.85rem;letter-spacing:.06em}
+.sync{margin-left:auto;font-size:.82rem;display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.ok i{background:var(--good)} .sync.busy i{background:var(--mango)} .sync.err i{background:var(--bad)}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{color:var(--ink);text-decoration:none;padding:8px 14px;border-radius:3px;font-weight:600;font-size:.9rem;letter-spacing:.04em;white-space:nowrap;background:rgba(255,255,255,.55)}
+nav a:hover{background:var(--surface)}
+nav a[aria-current="page"]{background:var(--btn);color:var(--btn-ink)}
+:root[data-theme="dark"] nav a:not([aria-current="page"]){background:rgba(0,0,0,.25)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav a:not([aria-current="page"]){background:rgba(0,0,0,.25)}}
+
+.wrap{padding-top:20px;padding-bottom:70px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.bar .grow{flex:1 1 220px}
+.bar .w{flex:0 1 200px}
+input[type=text],input[type=search],input[type=number],input[type=date],input[type=month],input[type=tel],input[type=email],input[type=time],input[type=password],select,textarea{
+  background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:9px 11px;min-height:42px;width:100%}
+textarea{resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:3px;padding:9px 15px;min-height:42px;font-weight:600;letter-spacing:.03em;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.btn.primary:hover{background:var(--brand-ink);border-color:var(--brand-ink);color:#fff}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{min-height:34px;padding:5px 10px;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:default}
+a.btn{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 13px;cursor:pointer;font-size:.88rem;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--soft);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;border-top:4px solid var(--mango)}
+.tile.o{border-top-color:var(--brand)} .tile.g{border-top-color:var(--good)} .tile.r{border-top-color:var(--bad)} .tile.c{border-top-color:var(--btn)}
+.tile b{display:block;font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+.tile span{color:var(--muted);font-size:.84rem}
+h2{font-size:1.08rem;font-weight:700;letter-spacing:.02em;margin:26px 0 10px;text-wrap:balance;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h2 .sub{font-weight:400}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:grid;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.head{font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;background:var(--bg)}
+.row.click{cursor:pointer}
+.row.click:hover{background:var(--soft)}
+.num{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.88rem}
+.name{font-weight:600;overflow-wrap:anywhere}
+.sub{color:var(--muted);font-size:.84rem;overflow-wrap:anywhere}
+.money{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.pill.good{background:var(--good-bg);color:var(--good)} .pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.idle{background:var(--idle-bg);color:var(--muted)}
+.pill.tag{background:var(--cream);color:var(--ink);font-weight:600}
+.row input,.row select{min-height:36px;padding:5px 8px}
+.empty{padding:26px 16px;text-align:center;color:var(--muted)}
+.hint{color:var(--muted);font-size:.86rem;margin:8px 2px 0}
+.note{background:var(--cream);border:1px solid var(--mango);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.note.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.note .grow{flex:1 1 260px}
+.scroll{overflow-x:auto}
+
+.r-kids{grid-template-columns:2rem minmax(0,2fr) minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) 6rem}
+.r-pay{grid-template-columns:minmax(0,1.8fr) 6rem 6rem 7.5rem 9rem 7rem 7.5rem}
+.r-exp{grid-template-columns:5.5rem minmax(0,1fr) minmax(0,1.6fr) 7rem}
+.r-wage{grid-template-columns:minmax(0,1.3fr) 5rem 5rem 6rem 7rem 7rem 8.5rem}
+.r-tea{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 6rem minmax(0,1.6fr) 7.5rem}
+.r-att{grid-template-columns:2rem minmax(0,1.6fr) auto}
+.r-two{grid-template-columns:minmax(0,1fr) auto}
+.r-three{grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) auto}
+
+.courses{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:8px;cursor:pointer;text-align:left}
+.card:hover{border-color:var(--brand)}
+.card.col{border-top:5px solid var(--cc)}
+.lesson-h .dot{width:12px;height:12px;border-radius:50%;background:var(--cc, var(--brand));flex:none}
+.lesson-f .lbl{display:grid;gap:4px;font-size:.82rem;font-weight:600;color:var(--muted);align-content:start}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches label{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--ink)}
+.swatches i{width:18px;height:18px;border-radius:50%;display:inline-block;border:1px solid var(--line)}
+.card h3{margin:0;font-size:1.02rem;font-weight:700}
+.card .meta{color:var(--muted);font-size:.86rem}
+.cap{display:grid;gap:4px}
+.cap .track{height:10px}
+.track{background:var(--idle-bg);border-radius:999px;overflow:hidden;height:14px}
+.fill{height:100%;background:var(--mango);border-radius:999px}
+.fill.full{background:var(--brand)} .fill.over{background:var(--bad)}
+.cap-line{display:flex;justify-content:space-between;font-size:.84rem;font-variant-numeric:tabular-nums}
+
+.week{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:8px;min-width:780px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px;display:grid;gap:6px;align-content:start}
+.day h4{margin:0 0 2px;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.slot{border-left:5px solid var(--cc, var(--brand));background:var(--soft);border-radius:4px;padding:6px 8px;font-size:.84rem;cursor:pointer}
+.slot b{display:block;font-size:.88rem}
+
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 12px;min-height:38px;cursor:pointer;font-weight:600;border-left:1.5px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"].P{background:var(--good-bg);color:var(--good)}
+.seg button[aria-pressed="true"].N{background:var(--bad-bg);color:var(--bad)}
+.seg button[aria-pressed="true"].O{background:var(--warn-bg);color:var(--warn)}
+.lesson{margin-bottom:20px}
+.lesson-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.lesson-h h3{margin:0;font-size:1.02rem}
+.lesson-f{display:grid;grid-template-columns:minmax(0,3fr) minmax(160px,1fr);gap:10px;margin-top:10px}
+.lesson-f label{display:grid;gap:4px;font-size:.82rem;font-weight:600;color:var(--muted)}
+
+.monthnav{display:flex;align-items:center;gap:6px}
+.monthnav strong{font-size:1.08rem;min-width:9.5rem;text-align:center;font-weight:700}
+
+table.grid{border-collapse:collapse;width:100%;font-size:.88rem}
+table.grid th,table.grid td{padding:7px 9px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}
+table.grid thead th{background:var(--bg);color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;border-top:0}
+table.grid td.r,table.grid th.r{text-align:right;font-variant-numeric:tabular-nums}
+
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;font-size:.84rem;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+.overlay{position:fixed;inset:0;background:rgba(30,20,12,.5);display:none;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto;z-index:20}
+.overlay.open{display:flex}
+.dialog{background:var(--surface);border-radius:10px;padding:20px;width:100%;max-width:600px;border:1px solid var(--line);border-top:5px solid var(--brand)}
+.dialog h3{font-size:1.2rem;margin:0 0 14px;font-weight:700}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form label,.form .lbl{display:grid;gap:4px;font-size:.84rem;font-weight:600;color:var(--muted)}
+.form .full{grid-column:1/-1}
+.checks{display:grid;gap:6px;max-height:220px;overflow:auto;border:1.5px solid var(--line);border-radius:var(--r);padding:8px 10px}
+.checks label{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--ink);font-size:.92rem}
+.checks label.dis{color:var(--muted)}
+.inline{display:flex;flex-wrap:wrap;gap:6px 16px}
+.inline label{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--ink);font-size:.92rem}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand-ink);flex:none}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.actions .left{margin-right:auto}
+.err{color:var(--bad);font-size:.88rem;margin:10px 0 0;min-height:1em}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--btn);color:var(--btn-ink);padding:10px 16px;border-radius:6px;font-weight:600;display:none;z-index:30;max-width:92vw}
+.toast.show{display:block}
+.welcome{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:26px;display:grid;gap:14px;max-width:720px}
+.welcome h2{margin:0;font-size:1.4rem}
+.welcome .acts{display:flex;gap:10px;flex-wrap:wrap}
+.settings{display:grid;gap:16px;max-width:760px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.panel h3{margin:0 0 4px;font-size:1.02rem}
+.panel p{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+.list-plain{margin:0;padding-left:18px;color:var(--muted);font-size:.9rem}
+
+@media (max-width:820px){
+  .row.head{display:none}
+  .r-kids{grid-template-columns:2rem 1fr auto} .r-kids .c-grp,.r-kids .c-crs,.r-kids .c-tel{display:none}
+  .r-pay{grid-template-columns:1fr 1fr} .r-pay .name{grid-column:1/-1} .r-pay .c-meth,.r-pay .c-date{display:none}
+  .r-pay label.mini{display:grid;gap:2px;font-size:.72rem;color:var(--muted)}
+  .r-exp{grid-template-columns:4.5rem 1fr auto} .r-exp .c-note{grid-column:2/3}
+  .r-wage{grid-template-columns:1fr auto} .r-wage .c-h,.r-wage .c-rate,.r-wage .c-les{display:none}
+  .r-tea{grid-template-columns:1fr auto} .r-tea .c-tel,.r-tea .c-rate,.r-tea .c-crs{display:none}
+  .r-att{grid-template-columns:1.6rem 1fr} .r-att .seg{grid-column:2/-1}
+  .r-three{grid-template-columns:1fr auto} .r-three .c-mid{grid-column:1/-1;order:3}
+  .form{grid-template-columns:1fr}
+  .lesson-f{grid-template-columns:1fr}
+}
+@media (min-width:821px){ .r-pay label.mini span{display:none} }
+</style>
+</head>
+<body>
+<header><div class="head-in">
+  <div class="top">
+    <div class="logo" aria-hidden="true">SEA-l</div>
+    <div class="title"><h1 id="appName">Evidence doučování</h1><p>SEA-l · děti, kurzy, učitelé, finance</p></div>
+    <button class="sync" id="syncBadge" title="Stav ukládání"><i></i><span id="syncText">Uloženo v prohlížeči</span></button>
+  </div>
+  <nav aria-label="Hlavní">
+    <a href="#prehled" data-v="prehled">Přehled</a>
+    <a href="#deti" data-v="deti">Děti</a>
+    <a href="#kurzy" data-v="kurzy">Kurzy a kapacita</a>
+    <a href="#dochazka" data-v="dochazka">Docházka</a>
+    <a href="#finance" data-v="finance">Finance</a>
+    <a href="#ucitele" data-v="ucitele">Učitelé</a>
+    <a href="#nastaveni" data-v="nastaveni">Nastavení</a>
+  </nav>
+</div></header>
+<main class="wrap"><div id="notice"></div><div id="tools"></div><div id="view"></div></main>
+<div class="overlay" id="overlay"><div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+"use strict";
+/* =========================================================
+   Základ
+   ========================================================= */
+const STORE_KEY = "sea-l-evidence-v1", GH_KEY = "sea-l-evidence-github";
+const DAYS = ["Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota","Neděle"];
+const DAYS_SHORT = ["Po","Út","St","Čt","Pá","So","Ne"];
+const MONTHS = ["Leden","Únor","Březen","Duben","Květen","Červen","Červenec","Srpen","Září","Říjen","Listopad","Prosinec"];
+const EXP_CATS = ["Lektor","Nájem","Energie a účty","Jídlo a pití","Pomůcky","Jiné"];
+const METHODS = {"":"—", hotove:"Hotově", prevod:"Převodem"};
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const kc = n => Math.round(Number(n)||0).toLocaleString("cs-CZ") + " Kč";
+const pad = n => String(n).padStart(2,"0");
+const uid = () => Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-4);
+const now = new Date();
+const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+const todayYm = todayStr.slice(0,7);
+const ymLabel = ym => `${MONTHS[Number(ym.slice(5))-1]} ${ym.slice(0,4)}`;
+const MONTHS_SHORT = ["Led","Úno","Bře","Dub","Kvě","Čvn","Čvc","Srp","Zář","Říj","Lis","Pro"];
+const ymShort = ym => `${MONTHS_SHORT[Number(ym.slice(5))-1]} ${ym.slice(2,4)}`;
+const pl = (n, one, few, many) => `${n} ${n === 1 ? one : n >= 2 && n <= 4 ? few : many}`;
+const shiftYm = (ym, d) => { let y = Number(ym.slice(0,4)), m = Number(ym.slice(5)) - 1 + d; y += Math.floor(m/12); m = ((m%12)+12)%12; return `${y}-${pad(m+1)}`; };
+const dowOf = ds => { const d = new Date(ds + "T12:00:00").getDay(); return d === 0 ? 7 : d; };
+const dateLabel = ds => `${Number(ds.slice(8))}. ${Number(ds.slice(5,7))}.`;
+const daysIn = ym => new Date(Number(ym.slice(0,4)), Number(ym.slice(5)), 0).getDate();
+const mins = t => { const [h,m] = String(t||"").split(":").map(Number); return (h||0)*60 + (m||0); };
+const hoursOf = c => Math.max(0, (mins(c.end) - mins(c.start)) / 60);
+const num = v => v === "" || v === null || v === undefined ? null : Number(v);
+
+const U = { view:"prehled", ym:todayYm, date:todayStr, q:"", group:"", status:"aktivni", course:"", payFilter:"", payQ:"", extraCourse:"" };
+let S = null;
+
+/* =========================================================
+   Data
+   ========================================================= */
+function blank(){
+  return { v:1, updatedAt:"", demo:false,
+    settings:{ name:"Evidence doučování", startYm:"", groups:["Předškoláci","Prvňáci","Druháci","Třeťáci","Čtvrťáci","Individuální"] },
+    students:[], teachers:[], courses:[], payments:{}, attendance:{}, expenses:[] };
+}
+function normalize(d){
+  const b = blank(), o = Object.assign(b, d || {});
+  o.settings = Object.assign(blank().settings, (d && d.settings) || {});
+  ["students","teachers","courses","expenses"].forEach(k => { if (!Array.isArray(o[k])) o[k] = []; });
+  ["payments","attendance"].forEach(k => { if (!o[k] || typeof o[k] !== "object" || Array.isArray(o[k])) o[k] = {}; });
+  o.students.forEach(s => { if (!Array.isArray(s.courses)) s.courses = []; if (!s.id) s.id = uid(); });
+  o.courses.forEach(c => { if (!Array.isArray(c.days)) c.days = c.dow ? [c.dow] : []; if (!c.id) c.id = uid();
+    if (!Array.isArray(c.teacherIds)) c.teacherIds = c.teacherId ? [c.teacherId] : []; delete c.teacherId; });
+  Object.values(o.attendance).forEach(day => Object.values(day || {}).forEach(r => { if (r && !Array.isArray(r.teacherIds) && r.teacherId !== undefined) { r.teacherIds = r.teacherId ? [r.teacherId] : []; delete r.teacherId; } }));
+  o.teachers.forEach(t => { if (!t.id) t.id = uid(); });
+  o.expenses.forEach(e => { if (!e.id) e.id = uid(); });
+  if (!o.settings.startYm) o.settings.startYm = [todayYm, ...Object.keys(o.payments), ...Object.keys(o.attendance).map(d => d.slice(0,7)), ...o.expenses.map(e => String(e.date||"").slice(0,7)).filter(Boolean)].sort()[0];
+  return o;
+}
+function loadLocal(){ try { const r = localStorage.getItem(STORE_KEY); return r ? normalize(JSON.parse(r)) : null; } catch(e){ return null; } }
+let warnedStorage = false;
+function saveLocal(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); }
+  catch(e){ if (!warnedStorage) { warnedStorage = true; toast("Prohlížeč nedovolil uložit data. Stáhni si zálohu v Nastavení."); } }
+}
+function commit(fn, opts={}){
+  fn(S); S.updatedAt = new Date().toISOString(); saveLocal(); GH.schedule();
+  if (opts.noRender) return;
+  setTimeout(renderKeepFocus, 0);
+}
+
+const byName = (a,b) => String(a.name||"").localeCompare(String(b.name||""), "cs");
+const student = id => S.students.find(s => s.id === id);
+const teacher = id => S.teachers.find(t => t.id === id);
+const course = id => S.courses.find(c => c.id === id);
+const tName = id => teacher(id)?.name || "bez učitele";
+const COLORS = [["","Bez barvy"],["#e2c21b","Žlutá"],["#7cc62a","Zelená"],["#22c99a","Mátová"],["#16bccf","Tyrkysová"],["#8b86ee","Fialová"],["#ef7d3c","Oranžová"]];
+const cT = c => (c && Array.isArray(c.teacherIds)) ? c.teacherIds : [];
+const tNames = ids => (ids || []).map(id => teacher(id)?.name).filter(Boolean).join(", ") || "bez učitele";
+const ccStyle = c => c && c.color ? ` style="--cc:${esc(c.color)}"` : "";
+const isActive = s => (s.status || "aktivni") !== "neaktivni";
+const enrolled = c => S.students.filter(s => isActive(s) && s.courses.includes(c.id)).sort(byName);
+const capOf = c => Number(c.capacity) > 0 ? Number(c.capacity) : 0;
+const coursesSorted = () => [...S.courses].sort((a,b) => ((a.days[0]||9) - (b.days[0]||9)) || String(a.start).localeCompare(String(b.start)) || ((a.order ?? 99) - (b.order ?? 99)) || byName(a,b));
+const daysText = c => c.days.length ? c.days.slice().sort().map(d => DAYS_SHORT[d-1]).join(", ") : "den nevyplněn";
+const timeText = c => c.start && c.end ? `${c.start}–${c.end}` : "čas nevyplněn";
+
+function attSids(ym){
+  const set = new Set();
+  Object.entries(S.attendance).forEach(([d, recs]) => { if (d.slice(0,7) !== ym) return;
+    Object.values(recs).forEach(r => Object.entries(r.marks||{}).forEach(([sid,v]) => { if (v) set.add(sid); })); });
+  return set;
+}
+function inMonth(s, ym, att){
+  const p = (S.payments[ym]||{})[s.id];
+  if (p && (Number(p.paid) > 0 || num(p.price) !== null)) return true;
+  if ((att || attSids(ym)).has(s.id)) return true;
+  if (ym < (s.from || S.settings.startYm || "")) return false;
+  if (isActive(s)) return true;
+  return !!s.inactiveFrom && ym < s.inactiveFrom;
+}
+const defaultPrice = s => Number(s.price) > 0 ? Number(s.price) : s.courses.reduce((a,cid) => a + (Number(course(cid)?.price)||0), 0);
+const payRec = (s, ym) => (S.payments[ym]||{})[s.id] || {};
+const priceOf = (s, ym) => { const p = num(payRec(s,ym).price); return p !== null ? p : defaultPrice(s); };
+const paidOf = (s, ym) => Number(payRec(s,ym).paid) || 0;
+function payState(s, ym){
+  const price = priceOf(s,ym), paid = paidOf(s,ym);
+  if (paid > 0 && paid >= price) return ["good","Zaplaceno"];
+  if (paid > 0) return ["warn","Částečně"];
+  if (price > 0) return ["bad","Nezaplaceno"];
+  return ["idle","Bez ceny"];
+}
+function monthFin(ym){
+  const att = attSids(ym), kids = S.students.filter(s => inMonth(s, ym, att));
+  let exp = 0, got = 0, cash = 0, bank = 0, debt = 0;
+  kids.forEach(s => { const p = priceOf(s,ym), d = paidOf(s,ym), m = payRec(s,ym).method; exp += p; got += d; if (m === "prevod") bank += d; else cash += d; if (d < p) debt++; });
+  const outs = S.expenses.filter(e => (e.date||"").slice(0,7) === ym);
+  const spent = outs.reduce((a,e) => a + (Number(e.amount)||0), 0);
+  return {kids, expected:exp, received:got, cash, bank, debtors:debt, expenses:outs, spent, profit: got - spent};
+}
+function lessonsHeld(ym){
+  const out = [];
+  Object.entries(S.attendance).forEach(([d, recs]) => { if (d.slice(0,7) !== ym) return;
+    Object.entries(recs).forEach(([cid, r]) => { const c = course(cid); if (!c) return;
+      if (!Object.values(r.marks||{}).some(Boolean) && !r.note) return;
+      out.push({date:d, course:c, teacherIds: Array.isArray(r.teacherIds) ? r.teacherIds : cT(c), hours: hoursOf(c)}); }); });
+  return out.sort((a,b) => a.date.localeCompare(b.date));
+}
+function missingLessons(ym){
+  const last = ym < (S.settings.startYm || "") ? 0 : ym < todayYm ? daysIn(ym) : ym === todayYm ? Number(todayStr.slice(8)) : 0, out = [];
+  S.courses.filter(c => c.active !== false && c.days.length && enrolled(c).length).forEach(c => {
+    for (let d = 1; d <= last; d++) { const ds = `${ym}-${pad(d)}`;
+      if (c.since && ds < c.since) continue;
+      if (!c.days.includes(dowOf(ds))) continue;
+      if (ds === todayStr && now.getHours()*60 + now.getMinutes() < mins(c.end || "23:59")) continue;
+      const r = (S.attendance[ds]||{})[c.id];
+      if (!r || !Object.values(r.marks||{}).some(Boolean)) out.push({date:ds, course:c}); } });
+  return out.sort((a,b) => a.date.localeCompare(b.date));
+}
+function absences(ym){
+  const map = {};
+  Object.entries(S.attendance).forEach(([d, recs]) => { if (d.slice(0,7) !== ym) return;
+    Object.values(recs).forEach(r => Object.entries(r.marks||{}).forEach(([sid,v]) => {
+      if (!v) return; const m = map[sid] || (map[sid] = {N:[],O:[],P:0});
+      if (v === "P") m.P++; else m[v].push(d); })); });
+  return Object.entries(map).map(([sid,m]) => ({s: student(sid), ...m})).filter(x => x.s && (x.N.length || x.O.length))
+    .sort((a,b) => b.N.length - a.N.length || b.O.length - a.O.length || byName(a.s,b.s));
+}
+
+/* =========================================================
+   GitHub synchronizace (soukromý repozitář s data.json)
+   ========================================================= */
+const GH = {
+  cfg:null, sha:null, timer:null, busy:false, again:false, state:"off", msg:"",
+  load(){ try { this.cfg = JSON.parse(localStorage.getItem(GH_KEY) || "null"); } catch(e){ this.cfg = null; } this.state = this.cfg ? "idle" : "off"; },
+  saveCfg(){ try { if (this.cfg) localStorage.setItem(GH_KEY, JSON.stringify(this.cfg)); else localStorage.removeItem(GH_KEY); } catch(e){} },
+  url(extra=""){ const c = this.cfg; return `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}${extra}`; },
+  fileUrl(){ return this.url("/contents/" + this.cfg.path.split("/").map(encodeURIComponent).join("/")); },
+  headers(){ return { "Authorization": "Bearer " + this.cfg.token, "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }; },
+  enc(str){ const b = new TextEncoder().encode(str); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); },
+  dec(b64){ const bin = atob(b64.replace(/\s/g,"")); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); },
+  set(state, msg){ this.state = state; this.msg = msg || ""; paintSync(); },
+  async get(){
+    const r = await fetch(this.fileUrl() + "?ref=" + encodeURIComponent(this.cfg.branch), {headers:this.headers(), cache:"no-store"});
+    if (r.status === 404) return null;
+    if (!r.ok) throw await this.error(r);
+    const j = await r.json();
+    if (!j.content && j.size > 0) throw new Error("Soubor s daty je větší než 1 MB, GitHub ho touto cestou nevydá.");
+    this.sha = j.sha; return normalize(JSON.parse(this.dec(j.content || "") || "{}"));
+  },
+  async put(){
+    const body = { message:`Evidence: změny ${new Date().toLocaleString("cs-CZ")}`, content:this.enc(JSON.stringify(S, null, 1)), branch:this.cfg.branch };
+    if (this.sha) body.sha = this.sha;
+    const r = await fetch(this.fileUrl(), {method:"PUT", headers:{...this.headers(), "Content-Type":"application/json"}, body:JSON.stringify(body)});
+    if (r.status === 409 || r.status === 422) { const e = new Error("conflict"); e.conflict = true; throw e; }
+    if (!r.ok) throw await this.error(r);
+    const j = await r.json(); this.sha = j.content && j.content.sha;
+  },
+  async error(r){
+    let t = ""; try { t = (await r.json()).message || ""; } catch(e){}
+    if (r.status === 401) return new Error("GitHub odmítl token. Zkontroluj, že je správně zkopírovaný a nevypršel.");
+    if (r.status === 403) return new Error("Token nemá právo zapisovat. Dej mu oprávnění Contents: Read and write.");
+    if (r.status === 404) return new Error("Repozitář nebyl nalezen, nebo k němu token nemá přístup.");
+    return new Error(`GitHub vrátil chybu ${r.status}${t ? ": " + t : ""}.`);
+  },
+  schedule(){ if (!this.cfg) return; clearTimeout(this.timer); this.set("pending", "Čeká na uložení…"); this.timer = setTimeout(() => this.push(), 2500); },
+  async push(){
+    if (!this.cfg) return;
+    if (this.busy) { this.again = true; return; }
+    this.busy = true; clearTimeout(this.timer); this.set("busy", "Ukládám na GitHub…");
+    try { await this.put(); this.set("ok", "Uloženo na GitHubu " + new Date().toLocaleTimeString("cs-CZ", {hour:"2-digit", minute:"2-digit"})); }
+    catch(e){ if (e.conflict) this.set("conflict", "Na GitHubu je jiná verze dat"); else this.set("err", e.message || "Uložení na GitHub se nepovedlo."); }
+    finally { this.busy = false; if (this.again) { this.again = false; this.push(); } }
+  },
+  async pull(silentIfSame){
+    this.set("busy", "Načítám z GitHubu…");
+    const remote = await this.get();
+    if (!remote) { this.sha = null; await this.put(); this.set("ok", "Data jsou nově uložená na GitHubu"); return "created"; }
+    if (!S || !S.updatedAt || (remote.updatedAt || "") >= S.updatedAt) { S = remote; saveLocal(); this.set("ok", "Načteno z GitHubu"); return "remote"; }
+    await this.put(); this.set("ok", "Novější data z prohlížeče uložena na GitHub"); return "local";
+  },
+  async resolve(useRemote){
+    try { this.set("busy", "Načítám z GitHubu…"); const remote = await this.get();
+      if (useRemote && remote) { S = remote; saveLocal(); this.set("ok", "Načtena verze z GitHubu"); }
+      else { await this.put(); this.set("ok", "Na GitHubu je teď tvoje verze"); }
+      renderAll(); } catch(e){ this.set("err", e.message); }
+  }
+};
+function paintSync(){
+  const b = $("#syncBadge"), t = $("#syncText"), st = GH.state;
+  b.className = "sync " + ({ok:"ok", busy:"busy", pending:"busy", err:"err", conflict:"err"}[st] || "");
+  t.textContent = st === "off" ? "Uloženo jen v prohlížeči" : (GH.msg || "Připojeno ke GitHubu");
+  if (st === "conflict" || st === "err") paintNotice();
+}
+
+/* =========================================================
+   Ukázková data
+   ========================================================= */
+function demoData(){
+  const d = blank(); d.demo = true; d.settings.name = "Evidence doučování (ukázka)"; d.settings.startYm = shiftYm(todayYm, -2);
+  const rnd = (() => { let x = 7; return () => (x = (x * 16807) % 2147483647) / 2147483647; })();
+  const T = [["Jana Nováková",250,"777 100 200"],["Linh Tranová",280,"777 300 400"],["Petr Dvořák",230,"777 500 600"]].map(([name,rate,phone]) => ({id:uid(), name, rate, phone, email:"", note:"", active:true}));
+  const C = [
+    ["Předškoláci A", 0, [1,3], "15:00","16:30", 8, 4500, "Učebna 1"],
+    ["Prvňáci", 1, [1,3], "16:30","18:00", 10, 4500, "Učebna 1"],
+    ["Druháci", 1, [2,4], "15:00","16:30", 10, 5000, "Učebna 2"],
+    ["Třeťáci a čtvrťáci", 2, [2,4], "16:30","18:00", 12, 5000, "Učebna 2"],
+    ["Čeština pro začátečníky", 0, [5], "16:30","18:00", 8, 2500, "Učebna 1"],
+    ["Individuální matematika", 2, [5], "15:00","16:00", 1, 3000, "Kancelář"]
+  ].map(([name,t,days,start,end,capacity,price,room]) => ({id:uid(), name, teacherIds:[T[t].id], days, start, end, capacity, price, room, note:"", active:true, since: shiftYm(todayYm,-2) + "-01"}));
+  const first = ["Anh","Bao","Linh","Minh","Tuan","Hoa","Duc","Mai","Long","Vy","Nam","Thu","Khanh","Lan","Quang","Ngoc","Huy","Trang","Phuong","Son","Ema","Adam","Sofie","Jakub","Nela","Tomáš","Julie","Ondra","Klára","Viet"];
+  const last = ["Nguyen","Tran","Le","Pham","Hoang","Vu","Dang","Bui","Do","Ngo"];
+  const grpFor = ci => ["Předškoláci","Prvňáci","Druháci","Třeťáci","Individuální","Čtvrťáci"][ci];
+  const plan = [[0,7],[1,10],[2,8],[3,12],[4,5],[5,1]];
+  let k = 0;
+  plan.forEach(([ci,n]) => { for (let i = 0; i < n; i++, k++) {
+    const g = ci === 3 ? (i % 2 ? "Čtvrťáci" : "Třeťáci") : ci === 4 ? "Individuální" : grpFor(ci);
+    d.students.push({id:uid(), name:`${first[k % first.length]} ${last[(k + Math.floor(k / first.length) * 3) % last.length]}`, group:g, status:"aktivni", inactiveFrom:"", from:"", parent:`Rodič ${last[(k*3) % last.length]}`, phone:`77${pad(k)} ${100+k} ${200+k}`, email:"", price:0, note:"", courses:[C[ci].id]}); } });
+  d.students.push({id:uid(), name:"Hana Ngo", group:"Druháci", status:"neaktivni", inactiveFrom:todayYm, from:"", parent:"", phone:"", email:"", price:0, note:"Odhlášena, stěhování", courses:[C[2].id]});
+  d.teachers = T; d.courses = C;
+  for (let m = -2; m <= 0; m++) {
+    const ym = shiftYm(todayYm, m); d.payments[ym] = {};
+    d.students.forEach((s,i) => { if (s.status === "neaktivni" && m === 0) return;
+      const price = s.courses.reduce((a,c) => a + C.find(x => x.id === c).price, 0), r = rnd();
+      const paid = m < 0 ? (r < .93 ? price : Math.round(price/2)) : (r < .55 ? price : r < .7 ? Math.round(price/2) : 0);
+      d.payments[ym][s.id] = {price, paid: paid || "", method: r < .6 ? "prevod" : "hotove", date: paid ? `${ym}-${pad(2 + Math.floor(r*8))}` : ""}; });
+    const last = m === 0 ? Number(todayStr.slice(8)) - 1 : daysIn(ym);
+    for (let day = 1; day <= last; day++) { const ds = `${ym}-${pad(day)}`;
+      C.forEach(c => { if (!c.days.includes(dowOf(ds))) return;
+        if (m === 0 && c.name === "Třeťáci a čtvrťáci" && day > last - 4) return;
+        const marks = {}; d.students.filter(s => s.courses.includes(c.id) && (s.status !== "neaktivni" || m < 0)).forEach(s => { const r = rnd(); marks[s.id] = r < .86 ? "P" : r < .94 ? "O" : "N"; });
+        (d.attendance[ds] || (d.attendance[ds] = {}))[c.id] = {marks, note: ["Čtení s porozuměním","Násobilka a slovní úlohy","Diktát, vyjmenovaná slova","Písmena a slabiky","Opakování na test","Hry s čísly"][Math.floor(rnd()*6)], teacherIds:[...c.teacherIds]}; }); }
+    const lt = {}; Object.entries(d.attendance).forEach(([ds, recs]) => { if (ds.slice(0,7) !== ym) return; Object.entries(recs).forEach(([cid]) => { const c = C.find(x => x.id === cid); c.teacherIds.forEach(tid => { lt[tid] = (lt[tid]||0) + hoursOf(c); }); }); });
+    if (m < 0) T.forEach(t => d.expenses.push({id:uid(), date:`${shiftYm(ym,1)}-05`, category:"Lektor", teacherId:t.id, amount:Math.round((lt[t.id]||0) * t.rate), note:`Výplata za ${ymLabel(ym).toLowerCase()}`, forYm:ym}));
+    d.expenses.push({id:uid(), date:`${ym}-01`, category:"Nájem", teacherId:"", amount:18000, note:"Učebny Vimbau"});
+    d.expenses.push({id:uid(), date:`${ym}-15`, category:"Energie a účty", teacherId:"", amount:3200 + Math.round(rnd()*400), note:""});
+    d.expenses.push({id:uid(), date:`${ym}-10`, category:"Pomůcky", teacherId:"", amount:800 + Math.round(rnd()*900), note:"Sešity, pastelky"});
+  }
+  d.updatedAt = new Date().toISOString();
+  return d;
+}
+
+/* =========================================================
+   UI pomocníci
+   ========================================================= */
+let toastT;
+function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("show"), 3800); }
+const monthNav = () => `<div class="monthnav"><button class="btn" data-ym="-1" aria-label="Předchozí měsíc">‹</button><strong>${ymLabel(U.ym)}</strong><button class="btn" data-ym="1" aria-label="Další měsíc">›</button></div>`;
+const groupOptions = (val, all) => `${all ? `<option value="">Všechny skupiny</option>` : `<option value="">bez skupiny</option>`}${S.settings.groups.map(g => `<option${g===val?" selected":""}>${esc(g)}</option>`).join("")}${val && !S.settings.groups.includes(val) ? `<option selected>${esc(val)}</option>` : ""}`;
+const teacherOptions = (val, emptyLabel) => `<option value="">${emptyLabel}</option>${[...S.teachers].sort(byName).filter(t => t.active !== false || t.id === val).map(t => `<option value="${t.id}"${t.id===val?" selected":""}>${esc(t.name)}</option>`).join("")}`;
+const courseOptions = (val, emptyLabel) => `<option value="">${emptyLabel}</option>${coursesSorted().map(c => `<option value="${c.id}"${c.id===val?" selected":""}>${esc(c.name)}</option>`).join("")}`;
+function capBar(c){
+  const n = enrolled(c).length, cap = capOf(c);
+  if (!cap) return `<div class="cap"><div class="cap-line"><span>${pl(n, "dítě", "děti", "dětí")}</span><span class="sub">kapacita nevyplněna</span></div></div>`;
+  const pct = Math.min(100, Math.round(100*n/cap)), cls = n > cap ? "over" : n === cap ? "full" : "";
+  return `<div class="cap"><div class="cap-line"><span><b>${n}</b> z ${pl(cap, "místa", "míst", "míst")}</span><span>${n > cap ? `<span class="pill bad">přeplněno o ${n-cap}</span>` : n === cap ? `<span class="pill warn">plno</span>` : `<span class="pill good">volno ${cap-n}</span>`}</span></div>
+    <div class="track" role="img" aria-label="Obsazeno ${n} z ${cap}"><div class="fill ${cls}" style="width:${pct}%"></div></div></div>`;
+}
+function barChart(months){
+  const data = months.map(ym => { const f = monthFin(ym); return {ym, inc:f.received, out:f.spent}; });
+  const max = Math.max(1, ...data.flatMap(d => [d.inc, d.out]));
+  const step = Math.pow(10, Math.floor(Math.log10(max))), nice = Math.ceil(max/step)*step;
+  const W = 640, H = 220, L = 54, B = 26, T = 10, cw = (W - L - 8) / data.length, bw = Math.min(22, cw/3);
+  const y = v => T + (H - T - B) * (1 - v/nice);
+  let g = "";
+  for (let i = 0; i <= 4; i++) { const v = nice*i/4; g += `<line x1="${L}" x2="${W-4}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v >= 1000 ? Math.round(v/1000) + " tis." : v}</text>`; }
+  data.forEach((d,i) => { const cx = L + cw*i + cw/2;
+    g += `<rect x="${cx-bw-1}" y="${y(d.inc)}" width="${bw}" height="${Math.max(0,H-B-y(d.inc))}" rx="2" fill="var(--brand)"><title>${ymLabel(d.ym)}: příjmy ${kc(d.inc)}</title></rect>`;
+    g += `<rect x="${cx+1}" y="${y(d.out)}" width="${bw}" height="${Math.max(0,H-B-y(d.out))}" rx="2" fill="var(--muted)" opacity=".75"><title>${ymLabel(d.ym)}: výdaje ${kc(d.out)}</title></rect>`;
+    g += `<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="11" fill="${d.ym === U.ym ? "var(--ink)" : "var(--muted)"}" font-weight="${d.ym === U.ym ? 700 : 400}">${ymShort(d.ym)}</text>`; });
+  return `<div class="chart"><div class="legend"><span><i style="background:var(--brand)"></i>Vybrané platby</span><span><i style="background:var(--muted);opacity:.75"></i>Výdaje</span></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Příjmy a výdaje po měsících">${g}</svg></div>`;
+}
+
+/* =========================================================
+   Pohledy
+   ========================================================= */
+const TOOLS = {
+  prehled: () => isEmpty() ? "" : `<div class="bar">${monthNav()}</div>`,
+  deti: () => `<div class="bar">
+      <div class="grow"><input type="search" id="q" placeholder="Hledat jméno, rodiče, telefon…" value="${esc(U.q)}" aria-label="Hledat"></div>
+      <div class="w"><select id="fGroup" aria-label="Skupina">${groupOptions(U.group, true)}</select></div>
+      <div class="w"><select id="fCourse" aria-label="Kurz">${courseOptions(U.course, "Všechny kurzy")}<option value="__none"${U.course === "__none" ? " selected" : ""}>Bez kurzu</option></select></div>
+      <button class="btn primary" id="addKid">+ Přidat dítě</button></div>
+    <div class="bar"><div class="chips" id="fStatus">${[["aktivni","Aktivní"],["neaktivni","Neaktivní"],["","Všichni"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${U.status===v}">${l}</button>`).join("")}</div></div>`,
+  kurzy: () => `<div class="bar"><span class="grow"></span><button class="btn primary" id="addCourse">+ Přidat kurz</button></div>`,
+  dochazka: () => `<div class="bar"><div class="w"><input type="date" id="date" value="${U.date}" aria-label="Datum lekce"></div>
+      <button class="btn" data-day="-1">Předchozí den</button><button class="btn" data-day="0">Dnes</button><button class="btn" data-day="1">Další den</button></div>`,
+  finance: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addExp">+ Přidat výdaj</button></div>`,
+  ucitele: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addTeacher">+ Přidat učitele</button></div>`,
+  nastaveni: () => ""
+};
+const isEmpty = () => !S.students.length && !S.courses.length && !S.teachers.length;
+
+const VIEWS = {
+  prehled(){
+    if (isEmpty()) return `<div class="welcome"><h2>Vítej v evidenci</h2>
+      <p>Zatím tu nejsou žádná data. Vyber, jak začít. Všechno jde později změnit v Nastavení.</p>
+      <div class="acts"><button class="btn primary" data-act="import">Nahrát soubor s daty</button><button class="btn" data-act="demo">Vyzkoušet na ukázce</button><a class="btn" href="#nastaveni" style="text-decoration:none">Připojit GitHub</a></div>
+      <p class="hint">Soubor s daty je záloha ve formátu .json, například data-start.json. Ukázka obsahuje smyšlené děti a učitele a jde kdykoli smazat.</p></div>`;
+    const f = monthFin(U.ym), act = S.students.filter(isActive);
+    const cs = S.courses.filter(c => c.active !== false), capC = cs.filter(c => capOf(c));
+    const seats = capC.reduce((a,c) => a + capOf(c), 0), used = capC.reduce((a,c) => a + Math.min(enrolled(c).length, capOf(c)), 0);
+    const abs = absences(U.ym), nAbs = abs.reduce((a,x) => a + x.N.length, 0), oAbs = abs.reduce((a,x) => a + x.O.length, 0);
+    const miss = missingLessons(U.ym), full = cs.filter(c => capOf(c) && enrolled(c).length >= capOf(c));
+    const noCourse = act.filter(s => !s.courses.length);
+    const debtors = f.kids.filter(s => paidOf(s,U.ym) < priceOf(s,U.ym)).sort((a,b) => (priceOf(b,U.ym)-paidOf(b,U.ym)) - (priceOf(a,U.ym)-paidOf(a,U.ym)));
+    let h = `<div class="tiles">
+      <div class="tile c"><b>${act.length}</b><span>aktivních dětí</span></div>
+      <div class="tile"><b>${seats ? Math.round(100*used/seats) + " %" : "—"}</b><span>obsazenost kurzů${seats ? ` · ${used} z ${pl(seats, "místa", "míst", "míst")}` : ""}</span></div>
+      <div class="tile o"><b>${kc(f.received)}</b><span>vybráno z ${kc(f.expected)}</span></div>
+      <div class="tile"><b>${kc(f.spent)}</b><span>výdaje</span></div>
+      <div class="tile ${f.profit >= 0 ? "g" : "r"}"><b>${kc(f.profit)}</b><span>${f.profit >= 0 ? "zisk" : "ztráta"} (vybráno − výdaje)</span></div>
+      <div class="tile r"><b>${nAbs}</b><span>neomluvených absencí · ${oAbs} omluvených</span></div></div>`;
+    const todo = [];
+    if (debtors.length) todo.push(`<div class="row r-three"><span class="name">Nezaplaceno za ${ymLabel(U.ym).toLowerCase()}</span><span class="sub c-mid">${pl(debtors.length, "dítě", "děti", "dětí")}, chybí ${kc(debtors.reduce((a,s) => a + priceOf(s,U.ym) - paidOf(s,U.ym), 0))}</span><a class="btn small" href="#finance">Otevřít platby</a></div>`);
+    if (miss.length) todo.push(`<div class="row r-three"><span class="name">Nezapsaná docházka</span><span class="sub c-mid">${miss.slice(0,4).map(m => `${dateLabel(m.date)} ${esc(m.course.name)}`).join(", ")}${miss.length > 4 ? ` a dalších ${miss.length-4}` : ""}</span><button class="btn small" data-goto-date="${miss[0].date}">Zapsat</button></div>`);
+    if (full.length) todo.push(`<div class="row r-three"><span class="name">Plné kurzy</span><span class="sub c-mid">${full.map(c => esc(c.name)).join(", ")}</span><a class="btn small" href="#kurzy">Kurzy</a></div>`);
+    if (noCourse.length) todo.push(`<div class="row r-three"><span class="name">Děti bez kurzu</span><span class="sub c-mid">${noCourse.slice(0,5).map(s => esc(s.name)).join(", ")}${noCourse.length > 5 ? ` a dalších ${noCourse.length-5}` : ""}</span><button class="btn small" data-filter-nocourse="1">Zobrazit</button></div>`);
+    const noTeacher = cs.filter(c => !cT(c).length);
+    if (noTeacher.length) todo.push(`<div class="row r-three"><span class="name">Kurzy bez učitele</span><span class="sub c-mid">${noTeacher.map(c => esc(c.name)).join(", ")}</span><a class="btn small" href="#kurzy">Kurzy</a></div>`);
+    h += `<h2>Potřebuje pozornost</h2><div class="sheet">${todo.join("") || `<div class="empty">Všechno je v pořádku.</div>`}</div>`;
+    h += `<h2>Příjmy a výdaje za posledních 6 měsíců</h2>` + barChart([-5,-4,-3,-2,-1,0].map(i => shiftYm(U.ym, i)));
+    h += `<h2>Obsazenost kurzů</h2><div class="courses">${cs.length ? coursesSorted().filter(c => c.active !== false).map(c => `<div class="card${c.color ? " col" : ""}" data-course="${c.id}"${ccStyle(c)} tabindex="0" role="button"><h3>${esc(c.name)}</h3><span class="meta">${esc(daysText(c))} · ${esc(timeText(c))} · ${esc(tNames(cT(c)))}</span>${capBar(c)}</div>`).join("") : `<div class="sheet"><div class="empty">Zatím žádné kurzy.</div></div>`}</div>`;
+    h += `<h2>Absence za ${ymLabel(U.ym).toLowerCase()}</h2>` + absenceTable(abs);
+    return h;
+  },
+  deti(){
+    const q = U.q.trim().toLowerCase();
+    const list = [...S.students].sort(byName).filter(s => (!U.status || (s.status||"aktivni") === U.status) && (!U.group || s.group === U.group)
+      && (!U.course || (U.course === "__none" ? !s.courses.length : s.courses.includes(U.course)))
+      && (!q || [s.name, s.parent, s.phone, s.email, s.note].some(v => String(v||"").toLowerCase().includes(q))));
+    if (!list.length) return `<div class="sheet"><div class="empty">${S.students.length ? "Nikdo neodpovídá filtru." : "Zatím tu nejsou žádné děti. Začni tlačítkem „Přidat dítě“."}</div></div>`;
+    return `<div class="sheet"><div class="row head r-kids"><span>č.</span><span>Jméno</span><span class="c-grp">Skupina</span><span class="c-crs">Kurzy</span><span class="c-tel">Rodič</span><span>Stav</span></div>` +
+      list.map((s,i) => `<div class="row click r-kids" data-kid="${s.id}" tabindex="0" role="button">
+        <span class="num">${i+1}.</span>
+        <span><span class="name">${esc(s.name)}</span>${s.note ? `<div class="sub">${esc(s.note)}</div>` : ""}</span>
+        <span class="c-grp">${s.group ? `<span class="pill tag">${esc(s.group)}</span>` : `<span class="sub">—</span>`}</span>
+        <span class="sub c-crs">${s.courses.map(cid => esc(course(cid)?.name || "")).filter(Boolean).join(", ") || "bez kurzu"}</span>
+        <span class="sub c-tel">${esc(s.parent || "")}${s.parent && s.phone ? "<br>" : ""}${esc(s.phone || "")}</span>
+        <span>${isActive(s) ? `<span class="pill good">Aktivní</span>` : `<span class="pill idle">Neaktivní</span>`}</span></div>`).join("") +
+      `</div><p class="hint">Zobrazeno ${list.length} z ${S.students.length}. Kliknutím na řádek dítě upravíš.</p>`;
+  },
+  kurzy(){
+    if (!S.courses.length) return `<div class="sheet"><div class="empty">Zatím žádné kurzy. Kurz je skupina dětí s učitelem, dnem a časem. Přidej první tlačítkem „Přidat kurz“.</div></div>`;
+    const cs = coursesSorted(), activeCs = cs.filter(c => c.active !== false);
+    const seats = activeCs.reduce((a,c) => a + capOf(c), 0), used = activeCs.filter(c => capOf(c)).reduce((a,c) => a + Math.min(enrolled(c).length, capOf(c)), 0);
+    let h = `<div class="tiles"><div class="tile c"><b>${activeCs.length}</b><span>aktivních kurzů</span></div><div class="tile"><b>${seats || "—"}</b><span>míst celkem</span></div>
+      <div class="tile o"><b>${seats ? seats - used : "—"}</b><span>volných míst</span></div><div class="tile"><b>${seats ? Math.round(100*used/seats) + " %" : "—"}</b><span>obsazenost</span></div></div>`;
+    h += `<div class="courses">${cs.map(c => { const kids = enrolled(c);
+      return `<div class="card${c.color ? " col" : ""}" data-course="${c.id}"${ccStyle(c)} tabindex="0" role="button"><h3>${esc(c.name)} ${c.active === false ? `<span class="pill idle">neaktivní</span>` : ""}</h3>
+        <span class="meta">${esc(daysText(c))} · ${esc(timeText(c))}${c.room ? " · " + esc(c.room) : ""}</span>
+        <span class="meta">${cT(c).length > 1 ? "Učitelé" : "Učitel"}: <b style="color:var(--ink)">${esc(tNames(cT(c)))}</b>${Number(c.price) ? ` · ${kc(c.price)} měsíčně` : ""}</span>
+        ${capBar(c)}<span class="sub">${kids.slice(0,6).map(s => esc(s.name)).join(", ")}${kids.length > 6 ? ` a dalších ${kids.length-6}` : ""}</span></div>`; }).join("")}</div>`;
+    h += `<h2>Týdenní rozvrh</h2><div class="scroll"><div class="week">${[1,2,3,4,5].map(d => `<div class="day"><h4>${DAYS[d-1]}</h4>${activeCs.filter(c => c.days.includes(d)).map(c => `<div class="slot" data-course="${c.id}"${ccStyle(c)} tabindex="0" role="button"><b>${esc(c.start || "?")}–${esc(c.end || "?")}</b>${esc(c.name)}<div class="sub">${esc(tNames(cT(c)))} · ${enrolled(c).length}${capOf(c) ? "/" + capOf(c) : ""}</div></div>`).join("") || `<span class="sub">—</span>`}</div>`).join("")}</div></div>`;
+    const weekend = activeCs.filter(c => c.days.some(d => d > 5));
+    if (weekend.length) h += `<p class="hint">O víkendu: ${weekend.map(c => `${esc(c.name)} (${esc(daysText(c))})`).join(", ")}</p>`;
+    return h;
+  },
+  dochazka(){
+    const dow = dowOf(U.date), recs = S.attendance[U.date] || {};
+    let cs = coursesSorted().filter(c => c.active !== false && c.days.includes(dow));
+    const extra = coursesSorted().filter(c => !cs.includes(c) && (recs[c.id] || c.id === U.extraCourse));
+    cs = cs.concat(extra);
+    let h = `<p class="hint" style="margin:0 2px 12px">${DAYS[dow-1]} ${dateLabel(U.date)} ${U.date.slice(0,4)}</p>`;
+    if (!S.courses.length) return h + `<div class="sheet"><div class="empty">Nejdřív přidej kurzy v záložce Kurzy a kapacita.</div></div>`;
+    if (!cs.length) h += `<div class="sheet"><div class="empty">Tento den podle rozvrhu není žádná lekce.</div></div>`;
+    h += cs.map(c => { const r = recs[c.id] || {}, marks = r.marks || {};
+      const kids = enrolled(c); Object.keys(marks).forEach(sid => { if (marks[sid] && !kids.find(k => k.id === sid) && student(sid)) kids.push(student(sid)); });
+      const done = kids.filter(s => marks[s.id]).length;
+      const tids = Array.isArray(r.teacherIds) ? r.teacherIds : cT(c);
+      const tList = [...S.teachers].sort(byName).filter(t => t.active !== false || tids.includes(t.id));
+      return `<div class="lesson"${ccStyle(c)}><div class="lesson-h">${c.color ? `<span class="dot" aria-hidden="true"></span>` : ""}<h3>${esc(timeText(c))} · ${esc(c.name)}</h3>
+        <span class="pill ${kids.length && done === kids.length ? "good" : done ? "warn" : "idle"}">${done} z ${kids.length} zapsáno</span>
+        ${done < kids.length ? `<button class="btn small" data-allp="${c.id}">Zbytek přítomen</button>` : ""}</div>
+        <div class="sheet">${kids.map((s,i) => `<div class="row r-att"><span class="num">${i+1}.</span><span class="name">${esc(s.name)}</span>
+          <span class="seg" role="group" aria-label="Docházka ${esc(s.name)}">${[["P","Přítomen"],["N","Chybí"],["O","Omluven"]].map(([k,l]) => `<button class="${k}" data-mark="${k}" data-c="${c.id}" data-s="${s.id}" aria-pressed="${marks[s.id]===k}">${l}</button>`).join("")}</span></div>`).join("") || `<div class="empty">V kurzu nejsou žádné děti.</div>`}</div>
+        <div class="lesson-f"><label>Co se probíralo<textarea data-k="note-${c.id}" data-note="${c.id}" rows="2" placeholder="Například: násobilka 6 a 7, čtení s porozuměním">${esc(r.note || "")}</textarea></label>
+          <div class="lbl">Učil(a)<div class="inline">${tList.map(t => `<label><input type="checkbox" data-lt="${c.id}" value="${t.id}"${tids.includes(t.id) ? " checked" : ""}>${esc(t.name)}</label>`).join("") || `<span class="sub">Zatím žádní učitelé.</span>`}</div></div></div></div>`; }).join("");
+    const others = coursesSorted().filter(c => !cs.includes(c));
+    if (others.length) h += `<div class="bar" style="margin-top:6px"><div class="w" style="flex-basis:280px"><select id="extraCourse" aria-label="Zapsat jiný kurz">${courseOptions("", "Zapsat náhradní lekci jiného kurzu…")}</select></div></div>`;
+    h += `<h2>Absence za ${ymLabel(U.date.slice(0,7)).toLowerCase()}</h2>` + absenceTable(absences(U.date.slice(0,7)));
+    return h;
+  },
+  finance(){
+    const f = monthFin(U.ym), ym = U.ym;
+    let h = `<div class="tiles"><div class="tile o"><b>${kc(f.received)}</b><span>vybráno · ${kc(f.cash)} hotově, ${kc(f.bank)} převodem</span></div>
+      <div class="tile"><b>${kc(f.expected)}</b><span>očekáváno</span></div>
+      <div class="tile r"><b>${kc(Math.max(0, f.expected - f.received))}</b><span>zbývá vybrat · ${pl(f.debtors, "dítě", "děti", "dětí")}</span></div>
+      <div class="tile c"><b>${kc(f.spent)}</b><span>výdaje</span></div>
+      <div class="tile ${f.profit >= 0 ? "g" : "r"}"><b>${kc(f.profit)}</b><span>${f.profit >= 0 ? "zisk" : "ztráta"}</span></div></div>`;
+    const q = U.payQ.trim().toLowerCase();
+    const list = [...f.kids].sort(byName).filter(s => (!U.payFilter || payState(s,ym)[0] === U.payFilter) && (!q || s.name.toLowerCase().includes(q)));
+    h += `<h2>Platby dětí</h2><div class="bar"><div class="grow"><input type="search" id="payQ" data-k="payQ" placeholder="Hledat jméno…" value="${esc(U.payQ)}" aria-label="Hledat v platbách"></div>
+      <div class="chips" id="fPay">${[["","Všichni"],["bad","Nezaplaceno"],["warn","Částečně"],["good","Zaplaceno"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${U.payFilter===v}">${l}</button>`).join("")}</div></div>`;
+    h += list.length ? `<div class="sheet"><div class="row head r-pay"><span>Jméno</span><span>Cena</span><span>Zaplaceno</span><span class="c-meth">Způsob</span><span class="c-date">Datum</span><span>Stav</span><span></span></div>` +
+      list.map(s => { const p = payRec(s,ym), [k,l] = payState(s,ym);
+        return `<div class="row r-pay"><span><span class="name">${esc(s.name)}</span><div class="sub">${esc(s.courses.map(c => course(c)?.name).filter(Boolean).join(", "))}</div></span>
+        <label class="mini"><span>Cena</span><input type="number" inputmode="numeric" min="0" step="100" data-k="pr-${s.id}" data-pay="price" data-s="${s.id}" value="${priceOf(s,ym) || ""}" placeholder="0" aria-label="Cena ${esc(s.name)}"></label>
+        <label class="mini"><span>Zaplaceno</span><input type="number" inputmode="numeric" min="0" step="100" data-k="pd-${s.id}" data-pay="paid" data-s="${s.id}" value="${p.paid ?? ""}" placeholder="0" aria-label="Zaplaceno ${esc(s.name)}"></label>
+        <span class="c-meth"><select data-k="pm-${s.id}" data-pay="method" data-s="${s.id}" aria-label="Způsob platby ${esc(s.name)}">${Object.entries(METHODS).map(([v,t]) => `<option value="${v}"${(p.method||"")===v?" selected":""}>${t}</option>`).join("")}</select></span>
+        <span class="c-date"><input type="date" data-k="pt-${s.id}" data-pay="date" data-s="${s.id}" value="${esc(p.date||"")}" aria-label="Datum platby ${esc(s.name)}"></span>
+        <span><span class="pill ${k}">${l}</span></span>
+        <span>${k === "good" || !priceOf(s,ym) ? "" : `<button class="btn small" data-payall="${s.id}">Zaplatil vše</button>`}</span></div>`; }).join("") + `</div>`
+      : `<div class="sheet"><div class="empty">V tomto měsíci tu nikdo není.</div></div>`;
+    h += `<p class="hint">Cena se předvyplní podle kurzů dítěte. Úprava ceny platí jen pro tento měsíc. Neaktivní děti zůstávají v měsících, kde mají platbu nebo docházku.</p>`;
+    h += `<h2>Výplaty učitelů</h2>` + wageTable(ym);
+    const outs = [...f.expenses].sort((a,b) => String(a.date).localeCompare(String(b.date)));
+    h += `<h2>Výdaje <span class="sub">${kc(f.spent)}</span></h2><div class="sheet">${outs.length ? outs.map(e => `<div class="row click r-exp" data-exp="${e.id}" tabindex="0" role="button">
+        <span class="num">${e.date ? dateLabel(e.date) : "—"}</span><span><span class="pill tag">${esc(e.category || "Jiné")}</span></span>
+        <span class="sub c-note">${esc([e.teacherId ? tName(e.teacherId) : "", e.note].filter(Boolean).join(" · "))}</span><span class="money name">${kc(e.amount)}</span></div>`).join("")
+      : `<div class="empty">V tomto měsíci zatím nejsou žádné výdaje.</div>`}</div>`;
+    const cats = {}; outs.forEach(e => { cats[e.category || "Jiné"] = (cats[e.category || "Jiné"]||0) + (Number(e.amount)||0); });
+    if (outs.length) h += `<p class="hint">${Object.entries(cats).sort((a,b) => b[1]-a[1]).map(([c,v]) => `${esc(c)} ${kc(v)}`).join(" · ")}</p>`;
+    h += `<h2>Za posledních 12 měsíců</h2>` + barChart([...Array(12)].map((_,i) => shiftYm(U.ym, i-11)));
+    const yr = [...Array(12)].map((_,i) => shiftYm(U.ym, i-11)).map(m => ({m, ...monthFin(m)})).filter(x => x.received || x.spent || x.expected);
+    if (yr.length) h += `<div class="sheet scroll" style="margin-top:10px"><table class="grid"><thead><tr><th>Měsíc</th><th class="r">Očekáváno</th><th class="r">Vybráno</th><th class="r">Výdaje</th><th class="r">Zisk</th></tr></thead><tbody>${yr.map(x => `<tr><td>${ymLabel(x.m)}</td><td class="r">${kc(x.expected)}</td><td class="r">${kc(x.received)}</td><td class="r">${kc(x.spent)}</td><td class="r" style="color:${x.profit >= 0 ? "var(--good)" : "var(--bad)"};font-weight:700">${kc(x.profit)}</td></tr>`).join("")}
+      <tr><td><b>Celkem</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.expected, 0))}</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.received, 0))}</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.spent, 0))}</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.profit, 0))}</b></td></tr></tbody></table></div>`;
+    return h;
+  },
+  ucitele(){
+    if (!S.teachers.length) return `<div class="sheet"><div class="empty">Zatím žádní učitelé. Přidej prvního tlačítkem „Přidat učitele“.</div></div>`;
+    const held = lessonsHeld(U.ym), miss = missingLessons(U.ym);
+    let h = `<div class="sheet"><div class="row head r-tea"><span>Jméno</span><span class="c-tel">Kontakt</span><span class="c-rate">Sazba</span><span class="c-crs">Kurzy</span><span>${ymShort(U.ym)}</span></div>` +
+      [...S.teachers].sort(byName).map(t => { const cs = S.courses.filter(c => cT(c).includes(t.id) && c.active !== false), mine = held.filter(x => x.teacherIds.includes(t.id)), m = miss.filter(x => cT(x.course).includes(t.id));
+        return `<div class="row click r-tea" data-teacher="${t.id}" tabindex="0" role="button"><span><span class="name">${esc(t.name)}</span> ${t.active === false ? `<span class="pill idle">neaktivní</span>` : ""}${t.note ? `<div class="sub">${esc(t.note)}</div>` : ""}</span>
+          <span class="sub c-tel">${esc(t.phone || "")}${t.phone && t.email ? "<br>" : ""}${esc(t.email || "")}</span>
+          <span class="num c-rate">${Number(t.rate) ? kc(t.rate) + "/h" : "—"}</span>
+          <span class="sub c-crs">${cs.map(c => `${esc(c.name)} (${esc(daysText(c))})`).join(", ") || "žádný kurz"}</span>
+          <span>${pl(mine.length, "lekce", "lekce", "lekcí")}${m.length ? `<br><span class="pill warn">${m.length} nezapsáno</span>` : ""}</span></div>`; }).join("") + `</div>`;
+    h += `<h2>Výplaty za ${ymLabel(U.ym).toLowerCase()}</h2>` + wageTable(U.ym);
+    if (miss.length) h += `<h2>Nezapsaná docházka</h2><div class="sheet">${miss.map(m => `<div class="row r-three"><span class="name">${dateLabel(m.date)} ${DAYS_SHORT[dowOf(m.date)-1]}</span><span class="sub c-mid">${esc(m.course.name)} · ${esc(tNames(cT(m.course)))}</span><button class="btn small" data-goto-date="${m.date}">Zapsat</button></div>`).join("")}</div>`;
+    return h;
+  },
+  nastaveni(){
+    const c = GH.cfg || {}, connected = !!GH.cfg;
+    return `<div class="settings">
+      <section class="panel"><h3>Ukládání na GitHub</h3>
+        <p>Data se ukládají do souboru data.json v tvém soukromém repozitáři. Každá změna je commit, takže máš celou historii a zálohu. Token zůstává jen v tomto prohlížeči.</p>
+        ${connected ? `<p><span class="pill ${GH.state === "ok" ? "good" : GH.state === "err" || GH.state === "conflict" ? "bad" : "warn"}">${esc(GH.msg || "Připojeno")}</span> ${esc(c.owner)}/${esc(c.repo)} · ${esc(c.path)}</p>
+          <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="ghpush">Uložit teď</button><button class="btn" data-act="ghpull">Načíst z GitHubu</button><button class="btn danger" data-act="ghoff">Odpojit</button></div>`
+        : `<form class="form" id="ghForm" novalidate>
+          <label>Uživatel nebo organizace na GitHubu<input type="text" id="gh_owner" autocomplete="off" spellcheck="false" placeholder="napr. sea-l-doucovani" value="${esc(c.owner||"")}"></label>
+          <label>Soukromý repozitář pro data<input type="text" id="gh_repo" autocomplete="off" spellcheck="false" placeholder="evidence-data" value="${esc(c.repo||"evidence-data")}"></label>
+          <label>Větev<input type="text" id="gh_branch" autocomplete="off" spellcheck="false" value="${esc(c.branch||"main")}"></label>
+          <label>Soubor<input type="text" id="gh_path" autocomplete="off" spellcheck="false" value="${esc(c.path||"data.json")}"></label>
+          <label class="full">Token (fine-grained, jen pro tento repozitář, Contents: Read and write)<input type="password" id="gh_token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
+          <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p>`}
+      </section>
+      <section class="panel"><h3>Záloha</h3><p>Stáhni si všechna data jako soubor, nebo je ze souboru obnov. Obnova přepíše všechno, co je teď v appce.</p>
+        <div class="actions" style="justify-content:flex-start"><button class="btn" data-act="export">Stáhnout zálohu</button><button class="btn" data-act="import">Nahrát zálohu</button></div></section>
+      <section class="panel"><h3>Skupiny dětí</h3><p>Ročníky nebo jiné skupiny, oddělené čárkou.</p>
+        <div class="bar" style="margin:0"><div class="grow"><input type="text" id="groupsInput" value="${esc(S.settings.groups.join(", "))}" aria-label="Skupiny"></div><button class="btn" data-act="groups">Uložit skupiny</button></div></section>
+      <section class="panel"><h3>Ukázka a smazání</h3><p>${S.demo ? "Teď máš v appce ukázková data." : "Ukázka přepíše současná data smyšlenými dětmi, učiteli a platbami."}</p>
+        <div class="actions" style="justify-content:flex-start">${S.demo ? "" : `<button class="btn" data-act="demo">Načíst ukázku</button>`}<button class="btn danger" data-act="wipe">Smazat všechna data</button></div></section>
+    </div>`;
+  }
+};
+function absenceTable(abs){
+  if (!abs.length) return `<div class="sheet"><div class="empty">V tomto měsíci nikdo nechyběl.</div></div>`;
+  return `<div class="sheet scroll"><table class="grid"><thead><tr><th>Jméno</th><th>Kurzy</th><th>Chybí</th><th>Kdy chyběl</th><th>Omluven</th><th>Kdy omluven</th><th class="r">Přítomen</th></tr></thead><tbody>${abs.map(x => `<tr>
+    <td><b>${esc(x.s.name)}</b></td><td class="sub">${esc(x.s.courses.map(c => course(c)?.name).filter(Boolean).join(", "))}</td>
+    <td>${x.N.length ? `<span class="pill bad">${x.N.length}×</span>` : "—"}</td><td class="num">${[...new Set(x.N)].sort().map(dateLabel).join(", ")}</td>
+    <td>${x.O.length ? `<span class="pill warn">${x.O.length}×</span>` : "—"}</td><td class="num">${[...new Set(x.O)].sort().map(dateLabel).join(", ")}</td><td class="r">${x.P}×</td></tr>`).join("")}</tbody></table></div>`;
+}
+function wageTable(ym){
+  if (!S.teachers.length) return `<div class="sheet"><div class="empty">Zatím žádní učitelé.</div></div>`;
+  const held = lessonsHeld(ym);
+  const paidOut = tid => S.expenses.filter(e => e.category === "Lektor" && e.teacherId === tid && (e.forYm ? e.forYm === ym : (e.date||"").slice(0,7) === ym)).reduce((a,e) => a + (Number(e.amount)||0), 0);
+  return `<div class="sheet"><div class="row head r-wage"><span>Učitel</span><span class="c-les">Lekcí</span><span class="c-h">Hodin</span><span class="c-rate">Sazba</span><span>Návrh</span><span>Vyplaceno</span><span></span></div>` +
+    [...S.teachers].sort(byName).filter(t => t.active !== false || held.some(x => x.teacherIds.includes(t.id))).map(t => { const mine = held.filter(x => x.teacherIds.includes(t.id)), hrs = mine.reduce((a,x) => a + x.hours, 0), sug = Math.round(hrs * (Number(t.rate)||0)), out = paidOut(t.id);
+      return `<div class="row r-wage"><span class="name">${esc(t.name)}</span><span class="num c-les">${mine.length}</span><span class="num c-h">${hrs.toLocaleString("cs-CZ")} h</span><span class="num c-rate">${Number(t.rate) ? kc(t.rate) : "—"}</span>
+        <span class="money">${Number(t.rate) ? kc(sug) : `<span class="sub">doplň sazbu</span>`}</span><span class="money">${out ? kc(out) : "—"}</span>
+        <span>${sug && !out ? `<button class="btn small" data-wage="${t.id}" data-amount="${sug}">Zapsat výplatu</button>` : out ? `<span class="pill good">zapsáno</span>` : ""}</span></div>`; }).join("") +
+    `</div><p class="hint">Návrh = odučené hodiny podle zapsané docházky × sazba učitele. Když lekci učí dvě lektorky, počítají se hodiny každé z nich. „Zapsat výplatu“ ho přidá mezi výdaje s datem, kdy výplatu zapisuješ, a tady se označí jako zapsaná.</p>`;
+}
+
+/* =========================================================
+   Vykreslení
+   ========================================================= */
+function paintNotice(){
+  const n = [];
+  if (S.demo) n.push(`<div class="note"><span class="grow"><b>Ukázková data.</b> Děti, učitelé i platby jsou smyšlené. Až budeš chtít začít naostro, smaž je.</span><button class="btn small" data-act="wipe">Smazat ukázku</button></div>`);
+  if (GH.state === "conflict") n.push(`<div class="note bad"><span class="grow">Na GitHubu jsou mezitím jiná data, nejspíš z jiného zařízení. Vyber, která verze platí.</span><button class="btn small" data-act="ghremote">Použít verzi z GitHubu</button><button class="btn small" data-act="ghlocal">Přepsat GitHub touto verzí</button></div>`);
+  else if (GH.state === "err") n.push(`<div class="note bad"><span class="grow">${esc(GH.msg)} Změny jsou zatím uložené v prohlížeči.</span><button class="btn small" data-act="ghpush">Zkusit znovu</button></div>`);
+  $("#notice").innerHTML = n.join("");
+}
+function render(){ $("#view").innerHTML = VIEWS[U.view](); }
+function renderKeepFocus(){
+  const a = document.activeElement, k = a && a.dataset ? a.dataset.k : null;
+  const sel = k && a.selectionStart != null ? [a.selectionStart, a.selectionEnd] : null;
+  if (a && a.closest && a.closest("#tools")) { render(); paintNotice(); return; }
+  render(); paintNotice();
+  if (k) { const n = document.querySelector(`[data-k="${CSS.escape(k)}"]`); if (n) { n.focus(); if (sel) try { n.setSelectionRange(sel[0], sel[1]); } catch(e){} } }
+}
+function renderAll(){
+  $$("nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === U.view ? "page" : "false"));
+  $("#appName").textContent = S.settings.name || "Evidence doučování";
+  $("#tools").innerHTML = TOOLS[U.view](); render(); paintNotice(); paintSync();
+}
+function route(){ const h = location.hash.slice(1); U.view = VIEWS[h] ? h : "prehled"; renderAll(); window.scrollTo(0,0); }
+
+/* =========================================================
+   Dialogy
+   ========================================================= */
+const closeDlg = () => $("#overlay").classList.remove("open");
+function openDlg(html, focusSel){ $("#dialog").innerHTML = html; $("#overlay").classList.add("open"); const f = $(focusSel || "input,select,textarea", $("#dialog")); if (f) f.focus(); }
+function confirmDlg(title, text, okLabel, onOk, danger){
+  openDlg(`<h3 id="dlgTitle">${esc(title)}</h3><p>${esc(text)}</p><div class="actions"><button class="btn" id="c_no">Zrušit</button><button class="btn ${danger ? "danger" : "primary"}" id="c_ok">${esc(okLabel)}</button></div>`, "#c_no");
+  $("#c_no").onclick = closeDlg; $("#c_ok").onclick = () => { closeDlg(); onOk(); };
+}
+function armDelete(btn, errEl, msg, run){
+  btn.onclick = () => { if (btn.dataset.sure) { run(); closeDlg(); toast("Smazáno."); } else { btn.dataset.sure = "1"; btn.textContent = "Opravdu smazat?"; errEl.textContent = msg; } };
+}
+function kidDlg(id){
+  const s = id ? student(id) : {status:"aktivni", group:"", from:todayYm, courses:[], price:0};
+  if (!s) return;
+  openDlg(`<h3 id="dlgTitle">${id ? "Upravit dítě" : "Přidat dítě"}</h3><form class="form" id="f" novalidate>
+    <label class="full">Jméno dítěte<input type="text" id="k_name" value="${esc(s.name||"")}" autocomplete="off"></label>
+    <label>Skupina<select id="k_group">${groupOptions(s.group, false)}</select></label>
+    <label>Stav<select id="k_status"><option value="aktivni"${isActive(s)?" selected":""}>Aktivní</option><option value="neaktivni"${!isActive(s)?" selected":""}>Neaktivní</option></select></label>
+    <label>Chodí od měsíce<input type="month" id="k_from" value="${esc(s.from||"")}"></label>
+    <label>Neaktivní od měsíce<input type="month" id="k_inactive" value="${esc(s.inactiveFrom||"")}"></label>
+    <div class="full lbl">Kurzy<div class="checks">${coursesSorted().filter(c => c.active !== false || s.courses.includes(c.id)).map(c => { const n = enrolled(c).filter(x => x.id !== s.id).length, cap = capOf(c), full = cap && n >= cap && !s.courses.includes(c.id);
+      return `<label class="${full ? "dis" : ""}"><input type="checkbox" name="kc" value="${c.id}"${s.courses.includes(c.id)?" checked":""}${full?" disabled":""}>${esc(c.name)} <span class="sub">${esc(daysText(c))} ${esc(c.start||"")} · ${n}${cap ? "/" + cap : ""}${full ? " · plno" : ""}</span></label>`; }).join("") || `<span class="sub">Zatím žádné kurzy.</span>`}</div></div>
+    <label>Měsíční cena (Kč)<input type="number" id="k_price" min="0" step="100" inputmode="numeric" value="${Number(s.price) || ""}" placeholder="podle kurzů"></label>
+    <label>Rodič<input type="text" id="k_parent" value="${esc(s.parent||"")}" autocomplete="off"></label>
+    <label>Telefon<input type="tel" id="k_phone" value="${esc(s.phone||"")}" autocomplete="off"></label>
+    <label>E-mail<input type="email" id="k_email" value="${esc(s.email||"")}" autocomplete="off"></label>
+    <label class="full">Poznámka<input type="text" id="k_note" value="${esc(s.note||"")}" autocomplete="off"></label>
+  </form><p class="err" id="k_err"></p>
+  <div class="actions">${id ? `<button class="btn danger left" id="k_del">Smazat</button>` : ""}<button class="btn" id="k_cancel">Zrušit</button><button class="btn primary" id="k_save">Uložit</button></div>`, "#k_name");
+  $("#k_cancel").onclick = closeDlg;
+  $("#k_status").onchange = () => { if ($("#k_status").value === "neaktivni" && !$("#k_inactive").value) $("#k_inactive").value = todayYm; };
+  const save = () => {
+    const name = $("#k_name").value.trim(); if (!name) { $("#k_err").textContent = "Vyplň jméno dítěte."; $("#k_name").focus(); return; }
+    const status = $("#k_status").value;
+    const data = { name, group:$("#k_group").value, status, from:$("#k_from").value, inactiveFrom: status === "neaktivni" ? ($("#k_inactive").value || todayYm) : "",
+      courses: $$("[name=kc]:checked").map(x => x.value), price: Number($("#k_price").value) || 0,
+      parent:$("#k_parent").value.trim(), phone:$("#k_phone").value.trim(), email:$("#k_email").value.trim(), note:$("#k_note").value.trim() };
+    commit(D => { if (id) Object.assign(D.students.find(x => x.id === id), data); else D.students.push({id:uid(), ...data}); });
+    closeDlg(); toast(id ? "Uloženo." : `${name} přidán(a).`);
+  };
+  $("#k_save").onclick = save; $("#f").onsubmit = e => { e.preventDefault(); save(); };
+  if (id) armDelete($("#k_del"), $("#k_err"), "Radši nastav stav Neaktivní. Smazáním zmizí dítě i z plateb a docházky.", () => commit(D => {
+    D.students = D.students.filter(x => x.id !== id);
+    Object.values(D.payments).forEach(m => delete m[id]);
+    Object.values(D.attendance).forEach(r => Object.values(r).forEach(x => { if (x.marks) delete x.marks[id]; })); }));
+}
+function courseDlg(id){
+  const c = id ? course(id) : {days:[], start:"14:00", end:"16:00", capacity:"", price:"", active:true, teacherIds:[], color:""};
+  if (!c) return;
+  const kidsIn = id ? enrolled(c).map(s => s.id) : [];
+  openDlg(`<h3 id="dlgTitle">${id ? "Upravit kurz" : "Přidat kurz"}</h3><form class="form" id="f" novalidate>
+    <label class="full">Název kurzu<input type="text" id="c_name" value="${esc(c.name||"")}" autocomplete="off" placeholder="Například Prvňáci, Čeština pro rodiče"></label>
+    <div class="full lbl">Učitelé<div class="inline" style="margin-top:4px">${[...S.teachers].sort(byName).filter(t => t.active !== false || cT(c).includes(t.id)).map(t => `<label><input type="checkbox" name="ct" value="${t.id}"${cT(c).includes(t.id) ? " checked" : ""}>${esc(t.name)}</label>`).join("") || `<span class="sub">Zatím žádní učitelé. Přidej je v záložce Učitelé.</span>`}</div></div>
+    <label>Místnost<input type="text" id="c_room" value="${esc(c.room||"")}" autocomplete="off"></label>
+    <div class="lbl">Barva<div class="swatches" style="margin-top:6px">${COLORS.map(([v,l]) => `<label title="${l}"><input type="radio" name="cc" value="${v}"${(c.color||"") === v ? " checked" : ""}>${v ? `<i style="background:${v}"></i>` : l}</label>`).join("")}</div></div>
+    <div class="full lbl">Dny v týdnu<div class="inline" style="margin-top:4px">${DAYS.map((d,i) => `<label><input type="checkbox" name="cd" value="${i+1}"${c.days.includes(i+1)?" checked":""}>${d}</label>`).join("")}</div></div>
+    <label>Od<input type="time" id="c_start" value="${esc(c.start||"")}"></label>
+    <label>Do<input type="time" id="c_end" value="${esc(c.end||"")}"></label>
+    <label>Kapacita (míst)<input type="number" id="c_cap" min="0" step="1" inputmode="numeric" value="${esc(c.capacity ?? "")}" placeholder="neomezeno"></label>
+    <label>Cena za měsíc (Kč)<input type="number" id="c_price" min="0" step="100" inputmode="numeric" value="${esc(c.price ?? "")}"></label>
+    <div class="full lbl">Děti v kurzu <span id="c_cnt"></span><div class="checks">${[...S.students].filter(s => isActive(s) || kidsIn.includes(s.id)).sort(byName).map(s => `<label><input type="checkbox" name="ck" value="${s.id}"${kidsIn.includes(s.id)?" checked":""}>${esc(s.name)} <span class="sub">${esc(s.group||"")}</span></label>`).join("") || `<span class="sub">Zatím žádné děti.</span>`}</div></div>
+    <label class="full"><span style="display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:500"><input type="checkbox" id="c_active"${c.active !== false ? " checked" : ""}>Kurz běží (neaktivní kurz se nezobrazuje v docházce)</span></label>
+    <label class="full">Poznámka<input type="text" id="c_note" value="${esc(c.note||"")}" autocomplete="off"></label>
+  </form><p class="err" id="c_err"></p>
+  <div class="actions">${id ? `<button class="btn danger left" id="c_del">Smazat</button>` : ""}<button class="btn" id="c_cancel">Zrušit</button><button class="btn primary" id="c_save">Uložit</button></div>`, "#c_name");
+  const cnt = () => { const n = $$("[name=ck]:checked").length, cap = Number($("#c_cap").value) || 0; $("#c_cnt").textContent = `(${n}${cap ? " z " + cap : ""})`; $("#c_cnt").style.color = cap && n > cap ? "var(--bad)" : ""; };
+  $$("[name=ck]").forEach(x => x.onchange = cnt); $("#c_cap").oninput = cnt; cnt();
+  $("#c_cancel").onclick = closeDlg;
+  const save = () => {
+    const name = $("#c_name").value.trim(); if (!name) { $("#c_err").textContent = "Vyplň název kurzu."; $("#c_name").focus(); return; }
+    const kids = $$("[name=ck]:checked").map(x => x.value), cap = Number($("#c_cap").value) || 0;
+    if (cap && kids.length > cap) { $("#c_err").textContent = `Kurz má kapacitu ${pl(cap, "místo", "místa", "míst")}, ale vybráno je ${pl(kids.length, "dítě", "děti", "dětí")}. Zvyš kapacitu nebo odeber děti.`; return; }
+    const st = $("#c_start").value, en = $("#c_end").value;
+    if (st && en && mins(en) <= mins(st)) { $("#c_err").textContent = "Konec lekce musí být po začátku."; return; }
+    const data = { name, teacherIds:$$("[name=ct]:checked").map(x => x.value), color:($("[name=cc]:checked")||{}).value || "", room:$("#c_room").value.trim(), days:$$("[name=cd]:checked").map(x => Number(x.value)), start:st, end:en,
+      capacity: $("#c_cap").value === "" ? "" : cap, price: $("#c_price").value === "" ? "" : Number($("#c_price").value), active:$("#c_active").checked, note:$("#c_note").value.trim() };
+    const cid = id || uid();
+    commit(D => { if (id) Object.assign(D.courses.find(x => x.id === id), data); else D.courses.push({id:cid, since:todayStr, ...data});
+      D.students.forEach(s => { const want = kids.includes(s.id), has = s.courses.includes(cid);
+        if (want && !has) s.courses.push(cid); if (!want && has && (isActive(s) || kidsIn.includes(s.id))) s.courses = s.courses.filter(x => x !== cid); }); });
+    closeDlg(); toast("Kurz uložen.");
+  };
+  $("#c_save").onclick = save; $("#f").onsubmit = e => { e.preventDefault(); save(); };
+  if (id) armDelete($("#c_del"), $("#c_err"), "Zapsaná docházka kurzu zůstane v historii, děti se z kurzu odhlásí. Radši zruš zaškrtnutí „Kurz běží“.", () => commit(D => {
+    D.courses = D.courses.filter(x => x.id !== id); D.students.forEach(s => { s.courses = s.courses.filter(x => x !== id); }); }));
+}
+function teacherDlg(id){
+  const t = id ? teacher(id) : {active:true};
+  if (!t) return;
+  openDlg(`<h3 id="dlgTitle">${id ? "Upravit učitele" : "Přidat učitele"}</h3><form class="form" id="f" novalidate>
+    <label class="full">Jméno<input type="text" id="t_name" value="${esc(t.name||"")}" autocomplete="off"></label>
+    <label>Telefon<input type="tel" id="t_phone" value="${esc(t.phone||"")}" autocomplete="off"></label>
+    <label>E-mail<input type="email" id="t_email" value="${esc(t.email||"")}" autocomplete="off"></label>
+    <label>Hodinová sazba (Kč)<input type="number" id="t_rate" min="0" step="10" inputmode="numeric" value="${esc(t.rate ?? "")}"></label>
+    <label>Stav<select id="t_active"><option value="1"${t.active !== false ? " selected" : ""}>Učí</option><option value="0"${t.active === false ? " selected" : ""}>Neučí</option></select></label>
+    <label class="full">Poznámka<input type="text" id="t_note" value="${esc(t.note||"")}" autocomplete="off" placeholder="Například: smlouva DPP, číslo účtu najdeš v kanceláři"></label>
+  </form><p class="err" id="t_err"></p>
+  <div class="actions">${id ? `<button class="btn danger left" id="t_del">Smazat</button>` : ""}<button class="btn" id="t_cancel">Zrušit</button><button class="btn primary" id="t_save">Uložit</button></div>`, "#t_name");
+  $("#t_cancel").onclick = closeDlg;
+  const save = () => {
+    const name = $("#t_name").value.trim(); if (!name) { $("#t_err").textContent = "Vyplň jméno."; return; }
+    const data = { name, phone:$("#t_phone").value.trim(), email:$("#t_email").value.trim(), rate: $("#t_rate").value === "" ? "" : Number($("#t_rate").value), active:$("#t_active").value === "1", note:$("#t_note").value.trim() };
+    commit(D => { if (id) Object.assign(D.teachers.find(x => x.id === id), data); else D.teachers.push({id:uid(), ...data}); });
+    closeDlg(); toast(id ? "Uloženo." : `${name} přidán(a).`);
+  };
+  $("#t_save").onclick = save; $("#f").onsubmit = e => { e.preventDefault(); save(); };
+  if (id) armDelete($("#t_del"), $("#t_err"), "Kurzy tohoto učitele zůstanou bez učitele. Radši nastav stav Neučí.", () => commit(D => {
+    D.teachers = D.teachers.filter(x => x.id !== id); D.courses.forEach(c => { c.teacherIds = cT(c).filter(x => x !== id); }); }));
+}
+function expenseDlg(id, preset){
+  const e = id ? S.expenses.find(x => x.id === id) : Object.assign({date: U.ym === todayYm ? todayStr : `${U.ym}-01`, category:"Lektor", teacherId:"", amount:"", note:""}, preset || {});
+  if (!e) return;
+  openDlg(`<h3 id="dlgTitle">${id ? "Upravit výdaj" : "Přidat výdaj"}</h3><form class="form" id="f" novalidate>
+    <label>Datum<input type="date" id="e_date" value="${esc(e.date||"")}"></label>
+    <label>Částka (Kč)<input type="number" id="e_amount" min="0" step="1" inputmode="numeric" value="${esc(e.amount ?? "")}"></label>
+    <label>Kategorie<select id="e_cat">${EXP_CATS.map(c => `<option${c===e.category?" selected":""}>${c}</option>`).join("")}</select></label>
+    <label id="e_tl">Učitel<select id="e_teacher">${teacherOptions(e.teacherId, "—")}</select></label>
+    <label class="full">Poznámka<input type="text" id="e_note" value="${esc(e.note||"")}" autocomplete="off"></label>
+  </form><p class="err" id="e_err"></p>
+  <div class="actions">${id ? `<button class="btn danger left" id="e_del">Smazat</button>` : ""}<button class="btn" id="e_cancel">Zrušit</button><button class="btn primary" id="e_save">Uložit</button></div>`, "#e_amount");
+  const tv = () => { $("#e_tl").style.display = $("#e_cat").value === "Lektor" ? "" : "none"; }; $("#e_cat").onchange = tv; tv();
+  $("#e_cancel").onclick = closeDlg;
+  const save = () => {
+    const amount = Number($("#e_amount").value); if (!$("#e_date").value) { $("#e_err").textContent = "Vyplň datum."; return; }
+    if (!(amount > 0)) { $("#e_err").textContent = "Vyplň částku."; return; }
+    const data = { date:$("#e_date").value, amount, category:$("#e_cat").value, teacherId: $("#e_cat").value === "Lektor" ? $("#e_teacher").value : "", note:$("#e_note").value.trim(), forYm: $("#e_cat").value === "Lektor" ? (e.forYm || "") : "" };
+    commit(D => { if (id) Object.assign(D.expenses.find(x => x.id === id), data); else D.expenses.push({id:uid(), ...data}); });
+    closeDlg(); toast("Výdaj uložen.");
+  };
+  $("#e_save").onclick = save; $("#f").onsubmit = ev => { ev.preventDefault(); save(); };
+  if (id) armDelete($("#e_del"), $("#e_err"), "Výdaj zmizí z přehledu financí.", () => commit(D => { D.expenses = D.expenses.filter(x => x.id !== id); }));
+}
+
+/* =========================================================
+   Akce
+   ========================================================= */
+function setMark(cid, sid, v){
+  commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), r = day[cid] || (day[cid] = {marks:{}, note:"", teacherIds:[...cT(course(cid))]});
+    r.marks = r.marks || {}; if (v) r.marks[sid] = v; else delete r.marks[sid];
+    if (!Object.keys(r.marks).length && !r.note) delete day[cid]; if (!Object.keys(day).length) delete D.attendance[U.date]; });
+}
+function setPay(sid, field, val){
+  const ym = U.ym;
+  commit(D => { const m = D.payments[ym] || (D.payments[ym] = {}), p = m[sid] || (m[sid] = {});
+    p[field] = val;
+    if (field === "paid" && Number(val) > 0 && !p.date) p.date = todayStr;
+    if (field === "price" && val === "") delete p.price;
+    if (!Object.values(p).some(v => v !== "" && v != null)) delete m[sid]; });
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(S, null, 1)], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `evidence-zaloha-${todayStr}.json`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast("Záloha stažena.");
+}
+$("#importFile").addEventListener("change", e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    let d; try { d = JSON.parse(rd.result); } catch(err) { toast("Soubor není platná záloha (.json)."); return; }
+    if (!d || !Array.isArray(d.students)) { toast("V souboru chybí seznam dětí. Je to opravdu záloha evidence?"); return; }
+    const go = () => { S = normalize(d); S.updatedAt = new Date().toISOString(); saveLocal(); GH.schedule(); renderAll(); toast(`Nahráno: ${S.students.length} dětí, ${S.courses.length} kurzů, ${S.teachers.length} učitelů.`); };
+    if (isEmpty()) go(); else confirmDlg("Nahrát zálohu?", `Současná data v appce nahradí obsah souboru ${file.name}. Pokud si je chceš nechat, stáhni si nejdřív zálohu.`, "Nahradit data", go, true);
+  };
+  rd.readAsText(file);
+});
+async function connectGitHub(){
+  const cfg = { owner:$("#gh_owner").value.trim(), repo:$("#gh_repo").value.trim(), branch:$("#gh_branch").value.trim() || "main", path:$("#gh_path").value.trim().replace(/^\/+/,"") || "data.json", token:$("#gh_token").value.trim() };
+  const err = $("#ghErr");
+  if (!cfg.owner || !cfg.repo || !cfg.token) { err.textContent = "Vyplň uživatele, repozitář a token."; return; }
+  err.textContent = "Ověřuji…"; GH.cfg = cfg;
+  try {
+    const r = await fetch(GH.url(), {headers:GH.headers(), cache:"no-store"});
+    if (!r.ok) throw await GH.error(r);
+    const repo = await r.json();
+    if (!repo.private) { GH.cfg = null; err.textContent = "Tento repozitář je veřejný. Data dětí patří do soukromého repozitáře, jinak by je viděl kdokoli."; return; }
+    if (repo.permissions && repo.permissions.push === false) throw new Error("Token má k repozitáři jen čtení. Dej mu oprávnění Contents: Read and write.");
+    GH.saveCfg(); const res = await GH.pull();
+    renderAll(); toast(res === "remote" ? "Připojeno. Data načtena z GitHubu." : "Připojeno. Data uložena na GitHub.");
+  } catch(e) { GH.cfg = null; GH.state = "off"; err.textContent = e.message || "Připojení se nepovedlo."; paintSync(); }
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("button, [data-kid], [data-course], [data-teacher], [data-exp], .overlay, #syncBadge"); if (!t) return;
+  if (t.id === "overlay") { if (e.target === t) closeDlg(); return; }
+  if (t.id === "syncBadge") { location.hash = "#nastaveni"; return; }
+  if (t.dataset.kid) return kidDlg(t.dataset.kid);
+  if (t.dataset.course) return courseDlg(t.dataset.course);
+  if (t.dataset.teacher) return teacherDlg(t.dataset.teacher);
+  if (t.dataset.exp) return expenseDlg(t.dataset.exp);
+  if (t.id === "addKid") return kidDlg(null);
+  if (t.id === "addCourse") return courseDlg(null);
+  if (t.id === "addTeacher") return teacherDlg(null);
+  if (t.id === "addExp") return expenseDlg(null);
+  if (t.dataset.ym) { U.ym = shiftYm(U.ym, Number(t.dataset.ym)); return renderAll(); }
+  if (t.dataset.day) { if (t.dataset.day === "0") U.date = todayStr; else { const d = new Date(U.date + "T12:00:00"); d.setDate(d.getDate() + Number(t.dataset.day)); U.date = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; } U.extraCourse = ""; return renderAll(); }
+  if (t.dataset.gotoDate) { U.date = t.dataset.gotoDate; location.hash = "#dochazka"; if (U.view === "dochazka") renderAll(); return; }
+  if (t.dataset.filterNocourse) { U.course = "__none"; U.status = "aktivni"; location.hash = "#deti"; return; }
+  if (t.closest("#fStatus")) { U.status = t.dataset.v; return renderAll(); }
+  if (t.closest("#fPay")) { U.payFilter = t.dataset.v; return render(); }
+  if (t.dataset.mark) { const cur = ((S.attendance[U.date]||{})[t.dataset.c]?.marks||{})[t.dataset.s]; return setMark(t.dataset.c, t.dataset.s, cur === t.dataset.mark ? "" : t.dataset.mark); }
+  if (t.dataset.allp) { const c = course(t.dataset.allp), r = (S.attendance[U.date]||{})[c.id] || {};
+    return commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), rec = day[c.id] || (day[c.id] = {marks:{}, note:"", teacherIds:[...cT(c)]});
+      enrolled(c).forEach(s => { if (!(r.marks||{})[s.id]) rec.marks[s.id] = "P"; }); }); }
+  if (t.dataset.payall) { const s = student(t.dataset.payall), price = priceOf(s, U.ym);
+    return commit(D => { const m = D.payments[U.ym] || (D.payments[U.ym] = {}), p = m[s.id] || (m[s.id] = {}); p.price = price; p.paid = price; if (!p.date) p.date = todayStr; }); }
+  if (t.dataset.wage) { const tch = teacher(t.dataset.wage); return expenseDlg(null, {category:"Lektor", teacherId:tch.id, amount:Number(t.dataset.amount), forYm:U.ym, note:`Výplata za ${ymLabel(U.ym).toLowerCase()}`, date: U.ym < todayYm ? todayStr : `${U.ym}-${pad(daysIn(U.ym))}`}); }
+  const act = t.dataset.act;
+  if (act === "import") return $("#importFile").click();
+  if (act === "export") return exportData();
+  if (act === "demo") { const go = () => { S = demoData(); saveLocal(); GH.schedule(); U.ym = todayYm; location.hash = "#prehled"; renderAll(); toast("Načtena ukázková data."); };
+    return isEmpty() ? go() : confirmDlg("Načíst ukázku?", "Ukázka přepíše všechna současná data. Pokud si je chceš nechat, stáhni si nejdřív zálohu.", "Přepsat ukázkou", go, true); }
+  if (act === "wipe") return confirmDlg(S.demo ? "Smazat ukázku?" : "Smazat všechna data?", S.demo ? "Appka bude prázdná a můžeš nahrát svoje data." : "Smažou se všechny děti, kurzy, učitelé, platby i docházka. Pokud jsi připojený ke GitHubu, předchozí verze zůstane v historii repozitáře.", "Smazat", () => {
+    const g = S.demo ? null : S.settings.groups; S = blank(); S.settings.startYm = todayYm; if (g) S.settings.groups = g; S.updatedAt = new Date().toISOString(); saveLocal(); GH.schedule(); location.hash = "#prehled"; renderAll(); toast("Data smazána."); }, true);
+  if (act === "groups") { const gs = $("#groupsInput").value.split(",").map(x => x.trim()).filter(Boolean); commit(D => { D.settings.groups = [...new Set(gs)]; }); return toast("Skupiny uloženy."); }
+  if (act === "ghpush") return GH.push().then(renderAll);
+  if (act === "ghpull") return GH.pull().then(renderAll).catch(err => { GH.set("err", err.message); renderAll(); });
+  if (act === "ghoff") return confirmDlg("Odpojit GitHub?", "Data zůstanou v tomto prohlížeči i na GitHubu. Token se z prohlížeče smaže.", "Odpojit", () => { GH.cfg = null; GH.sha = null; GH.saveCfg(); GH.state = "off"; renderAll(); });
+  if (act === "ghremote") return GH.resolve(true);
+  if (act === "ghlocal") return GH.resolve(false);
+});
+document.addEventListener("submit", e => { if (e.target.id === "ghForm") { e.preventDefault(); connectGitHub(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeDlg();
+  const d = e.target.dataset || {};
+  if (e.key === "Enter" && (d.kid || d.course || d.teacher || d.exp)) { e.preventDefault(); e.target.click(); }
+  if (e.key === "Enter" && d.pay && e.target.tagName === "INPUT") e.target.blur();
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "q") { U.q = t.value; render(); }
+  if (t.id === "payQ") { U.payQ = t.value; renderKeepFocus(); }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "fGroup") { U.group = t.value; render(); }
+  if (t.id === "fCourse") { U.course = t.value; render(); }
+  if (t.id === "date" && t.value) { U.date = t.value; U.extraCourse = ""; render(); }
+  if (t.id === "extraCourse" && t.value) { U.extraCourse = t.value; render(); }
+  if (t.dataset.pay) { const f = t.dataset.pay; setPay(t.dataset.s, f, f === "price" || f === "paid" ? (t.value === "" ? "" : Number(t.value)) : t.value); }
+  if (t.dataset.note) { const cid = t.dataset.note, v = t.value.trim();
+    commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), r = day[cid] || (day[cid] = {marks:{}, note:"", teacherIds:[...cT(course(cid))]}); r.note = v;
+      if (!v && !Object.keys(r.marks||{}).length) delete day[cid]; if (!Object.keys(day).length) delete D.attendance[U.date]; }); toast("Zápis uložen."); }
+  if (t.dataset.lt) { const cid = t.dataset.lt, ids = $$(`[data-lt="${cid}"]:checked`).map(x => x.value);
+    commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), r = day[cid] || (day[cid] = {marks:{}, note:""}); r.teacherIds = ids; }); }
+});
+window.addEventListener("hashchange", route);
+window.addEventListener("beforeunload", e => { if (GH.cfg && (GH.state === "pending" || GH.state === "busy")) { GH.push(); e.preventDefault(); e.returnValue = ""; } });
+
+/* =========================================================
+   Start
+   ========================================================= */
+(async function start(){
+  S = loadLocal() || normalize(blank());
+  GH.load();
+  route();
+  if (GH.cfg) { try { await GH.pull(); renderAll(); } catch(e){ GH.set("err", e.message || "GitHub teď není dostupný."); renderAll(); } }
+})();
+</script>
+</body>
+</html>
