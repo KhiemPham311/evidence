@@ -233,16 +233,17 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand-ink);flex:n
 <header><div class="head-in">
   <div class="top">
     <div class="logo" aria-hidden="true">SEA-l</div>
-    <div class="title"><h1 id="appName">Evidence doučování</h1><p>SEA-l · děti, kurzy, učitelé, finance</p></div>
+    <div class="title"><h1 id="appName">Evidence doučování</h1><p>SEA-l · děti, kurzy, učitelé, platby a výdaje</p></div>
     <button class="sync" id="syncBadge" title="Stav ukládání"><i></i><span id="syncText">Uloženo v prohlížeči</span></button>
   </div>
   <nav aria-label="Hlavní">
     <a href="#prehled" data-v="prehled">Přehled</a>
+    <a href="#dochazka" data-v="dochazka">Docházka</a>
     <a href="#deti" data-v="deti">Děti</a>
     <a href="#kurzy" data-v="kurzy">Kurzy a kapacita</a>
-    <a href="#dochazka" data-v="dochazka">Docházka</a>
-    <a href="#finance" data-v="finance">Finance</a>
-    <a href="#ucitele" data-v="ucitele">Učitelé</a>
+    <a href="#platby" data-v="platby">Platby dětí</a>
+    <a href="#ucitele" data-v="ucitele">Učitelé a platy</a>
+    <a href="#vydaje" data-v="vydaje">Výdaje</a>
     <a href="#nastaveni" data-v="nastaveni">Nastavení</a>
   </nav>
 </div></header>
@@ -615,7 +616,8 @@ const TOOLS = {
   kurzy: () => `<div class="bar"><span class="grow"></span><button class="btn primary" id="addCourse">+ Přidat kurz</button></div>`,
   dochazka: () => `<div class="bar"><div class="w"><input type="date" id="date" value="${U.date}" aria-label="Datum lekce"></div>
       <button class="btn" data-day="-1">Předchozí den</button><button class="btn" data-day="0">Dnes</button><button class="btn" data-day="1">Další den</button></div>`,
-  finance: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn" data-act="xlsx-export">Stáhnout Excel</button><button class="btn primary" id="addExp">+ Přidat výdaj</button></div>`,
+  platby: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn" data-act="xlsx-export">Stáhnout Excel</button></div>`,
+  vydaje: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addExp">+ Přidat účet nebo nákup</button></div>`,
   ucitele: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addTeacher">+ Přidat učitele</button></div>`,
   nastaveni: () => ""
 };
@@ -642,7 +644,7 @@ const VIEWS = {
       <div class="tile ${f.profit >= 0 ? "g" : "r"}"><b>${kc(f.profit)}</b><span>${f.profit >= 0 ? "zisk" : "ztráta"} (vybráno − výdaje)</span></div>
       <div class="tile r"><b>${nAbs}</b><span>neomluvených absencí · ${oAbs} omluvených</span></div></div>`;
     const todo = [];
-    if (debtors.length) todo.push(`<div class="row r-three"><span class="name">Nezaplaceno za ${ymLabel(U.ym).toLowerCase()}</span><span class="sub c-mid">${pl(debtors.length, "dítě", "děti", "dětí")}, chybí ${kc(debtors.reduce((a,s) => a + priceOf(s,U.ym) - paidOf(s,U.ym), 0))}</span><a class="btn small" href="#finance">Otevřít platby</a></div>`);
+    if (debtors.length) todo.push(`<div class="row r-three"><span class="name">Nezaplaceno za ${ymLabel(U.ym).toLowerCase()}</span><span class="sub c-mid">${pl(debtors.length, "dítě", "děti", "dětí")}, chybí ${kc(debtors.reduce((a,s) => a + priceOf(s,U.ym) - paidOf(s,U.ym), 0))}</span><a class="btn small" href="#platby">Otevřít platby</a></div>`);
     if (miss.length) todo.push(`<div class="row r-three"><span class="name">Nezapsaná docházka</span><span class="sub c-mid">${miss.slice(0,4).map(m => `${dateLabel(m.date)} ${esc(m.course.name)}`).join(", ")}${miss.length > 4 ? ` a dalších ${miss.length-4}` : ""}</span><button class="btn small" data-goto-date="${miss[0].date}">Zapsat</button></div>`);
     if (full.length) todo.push(`<div class="row r-three"><span class="name">Plné kurzy</span><span class="sub c-mid">${full.map(c => esc(c.name)).join(", ")}</span><a class="btn small" href="#kurzy">Kurzy</a></div>`);
     if (noCourse.length) todo.push(`<div class="row r-three"><span class="name">Děti bez kurzu</span><span class="sub c-mid">${noCourse.slice(0,5).map(s => esc(s.name)).join(", ")}${noCourse.length > 5 ? ` a dalších ${noCourse.length-5}` : ""}</span><button class="btn small" data-filter-nocourse="1">Zobrazit</button></div>`);
@@ -711,16 +713,15 @@ const VIEWS = {
     h += `<h2>Absence za ${ymLabel(U.date.slice(0,7)).toLowerCase()}</h2>` + absenceTable(absences(U.date.slice(0,7)));
     return h;
   },
-  finance(){
+  platby(){
     const f = monthFin(U.ym), ym = U.ym;
     let h = `<div class="tiles"><div class="tile o"><b>${kc(f.received)}</b><span>vybráno · ${kc(f.cash)} hotově, ${kc(f.bank)} převodem</span></div>
       <div class="tile"><b>${kc(f.expected)}</b><span>očekáváno</span></div>
       <div class="tile r"><b>${kc(Math.max(0, f.expected - f.received))}</b><span>zbývá vybrat · ${pl(f.debtors, "dítě", "děti", "dětí")}</span></div>
-      <div class="tile c"><b>${kc(f.spent)}</b><span>výdaje</span></div>
-      <div class="tile ${f.profit >= 0 ? "g" : "r"}"><b>${kc(f.profit)}</b><span>${f.profit >= 0 ? "zisk" : "ztráta"}</span></div></div>`;
+      <div class="tile g"><b>${pl(f.kids.filter(s => payState(s,ym)[0] === "good").length, "dítě", "děti", "dětí")}</b><span>má zaplaceno</span></div></div>`;
     const q = U.payQ.trim().toLowerCase();
     const list = [...f.kids].sort(byName).filter(s => (!U.payFilter || payState(s,ym)[0] === U.payFilter) && (!q || s.name.toLowerCase().includes(q)));
-    h += `<h2>Platby dětí</h2><div class="bar"><div class="grow"><input type="search" id="payQ" data-k="payQ" placeholder="Hledat jméno…" value="${esc(U.payQ)}" aria-label="Hledat v platbách"></div>
+    h += `<div class="bar"><div class="grow"><input type="search" id="payQ" data-k="payQ" placeholder="Hledat jméno…" value="${esc(U.payQ)}" aria-label="Hledat v platbách"></div>
       <div class="chips" id="fPay">${[["","Všichni"],["bad","Nezaplaceno"],["warn","Částečně"],["good","Zaplaceno"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${U.payFilter===v}">${l}</button>`).join("")}</div></div>`;
     h += list.length ? `<div class="sheet"><div class="row head r-pay"><span>Jméno</span><span>Cena</span><span>Zaplaceno</span><span class="c-meth">Způsob</span><span class="c-date">Datum</span><span>Stav</span><span></span></div>` +
       list.map(s => { const p = payRec(s,ym), [k,l] = payState(s,ym);
@@ -733,9 +734,15 @@ const VIEWS = {
         <span>${k === "good" || !priceOf(s,ym) ? "" : `<button class="btn small" data-payall="${s.id}">Zaplatil vše</button>`}</span></div>`; }).join("") + `</div>`
       : `<div class="sheet"><div class="empty">V tomto měsíci tu nikdo není.</div></div>`;
     h += `<p class="hint">Cena se předvyplní podle kurzů dítěte. Úprava ceny platí jen pro tento měsíc. Neaktivní děti zůstávají v měsících, kde mají platbu nebo docházku.</p>`;
-    h += `<h2>Výplaty učitelů</h2>` + wageTable(ym);
+    return h;
+  },
+  vydaje(){
+    const f = monthFin(U.ym);
+    let h = `<div class="tiles"><div class="tile o"><b>${kc(f.received)}</b><span>vybráno od dětí</span></div>
+      <div class="tile c"><b>${kc(f.spent)}</b><span>výdaje · z toho výplaty ${kc(f.expenses.filter(e => e.category === "Lektor").reduce((a,e) => a + (Number(e.amount)||0), 0))}</span></div>
+      <div class="tile ${f.profit >= 0 ? "g" : "r"}"><b>${kc(f.profit)}</b><span>${f.profit >= 0 ? "zisk" : "ztráta"} (vybráno − výdaje)</span></div></div>`;
     h += expenseSection(f);
-    h += `<h2>Za posledních 12 měsíců</h2>` + barChart([...Array(12)].map((_,i) => shiftYm(U.ym, i-11)));
+    h += `<h2>Příjmy, výdaje a zisk za posledních 12 měsíců</h2>` + barChart([...Array(12)].map((_,i) => shiftYm(U.ym, i-11)));
     const yr = [...Array(12)].map((_,i) => shiftYm(U.ym, i-11)).map(m => ({m, ...monthFin(m)})).filter(x => x.received || x.spent || x.expected);
     if (yr.length) h += `<div class="sheet scroll" style="margin-top:10px"><table class="grid"><thead><tr><th>Měsíc</th><th class="r">Očekáváno</th><th class="r">Vybráno</th><th class="r">Výdaje</th><th class="r">Zisk</th></tr></thead><tbody>${yr.map(x => `<tr><td>${ymLabel(x.m)}</td><td class="r">${kc(x.expected)}</td><td class="r">${kc(x.received)}</td><td class="r">${kc(x.spent)}</td><td class="r" style="color:${x.profit >= 0 ? "var(--good)" : "var(--bad)"};font-weight:700">${kc(x.profit)}</td></tr>`).join("")}
       <tr><td><b>Celkem</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.expected, 0))}</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.received, 0))}</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.spent, 0))}</b></td><td class="r"><b>${kc(yr.reduce((a,x) => a + x.profit, 0))}</b></td></tr></tbody></table></div>`;
@@ -858,10 +865,11 @@ function renderKeepFocus(){
 }
 function renderAll(){
   $$("nav a").forEach(a => a.setAttribute("aria-current", a.dataset.v === U.view ? "page" : "false"));
+  { const cur = $(`nav a[data-v="${U.view}"]`), nav = $("nav"); if (cur && nav) nav.scrollLeft = Math.max(0, cur.offsetLeft - nav.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2); }
   $("#appName").textContent = S.settings.name || "Evidence doučování";
   $("#tools").innerHTML = TOOLS[U.view](); render(); paintNotice(); paintSync();
 }
-function route(){ const h = location.hash.slice(1); U.view = VIEWS[h] ? h : "prehled"; renderAll(); window.scrollTo(0,0); }
+function route(){ let h = location.hash.slice(1); if (h === "finance") { history.replaceState(null, "", "#platby"); h = "platby"; } U.view = VIEWS[h] ? h : "prehled"; renderAll(); window.scrollTo(0,0); }
 
 /* =========================================================
    Dialogy
@@ -985,8 +993,8 @@ function expenseSection(f){
   const scopeTxt = {m: ymLabel(ym).toLowerCase(), y:"posledních 12 měsíců", a:"celou dobu"}[sc];
   const dl = ds => sc === "m" ? dateLabel(ds) : `${dateLabel(ds)} ${ds.slice(2,4)}`;
   let h = `<h2>Výdaje <span class="sub">${kc(total)} za ${scopeTxt}</span></h2>
-    <div class="bar"><div class="chips" id="fExpScope">${[["m","Tento měsíc"],["y","12 měsíců"],["a","Vše"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${sc===v}">${l}</button>`).join("")}</div><span class="grow"></span><button class="btn primary" id="addBill">+ Přidat účet nebo nákup</button></div>`;
-  if (!all.length) return h + `<div class="sheet"><div class="empty">Za ${scopeTxt} zatím nejsou žádné výdaje. Účty a nákupy (třeba dekorace, pomůcky, nájem) přidáš tlačítkem „Přidat účet nebo nákup“.</div></div>`;
+    <div class="bar"><div class="chips" id="fExpScope">${[["m","Tento měsíc"],["y","12 měsíců"],["a","Vše"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${sc===v}">${l}</button>`).join("")}</div></div>`;
+  if (!all.length) return h + `<div class="sheet"><div class="empty">Za ${scopeTxt} zatím nejsou žádné výdaje. Účty a nákupy (třeba dekorace, pomůcky, nájem) přidáš tlačítkem „Přidat účet nebo nákup“ nahoře.</div></div>`;
   h += `<div class="sheet"><div class="cats" id="fExpCat">${ranked.map(([c,v]) => `<button class="cat" data-v="${esc(c)}" aria-pressed="${U.expCat===c}" title="Ukázat jen ${esc(c)}"><span class="name">${esc(c)}</span><span class="track"><i style="width:${Math.max(2, Math.round(v/max*100))}%"></i></span><b>${kc(v)}</b></button>`).join("")}</div></div>`;
   h += `<p class="hint">${U.expCat ? `Zobrazeno jen: <b>${esc(U.expCat)}</b>. <button class="btn small" id="expCatAll">Ukázat všechny kategorie</button>` : "Klikni na kategorii a uvidíš jen její výdaje."}</p>`;
   h += `<div class="sheet">${outs.map(e => `<div class="row click r-exp" data-exp="${e.id}" tabindex="0" role="button">
