@@ -57,14 +57,21 @@ Na dalším zařízení (třeba na mobilu) otevři stejnou adresu, v Nastavení 
 
 ## Přístup pro další lidi (ředitel, zástupce)
 
-Data vidí jen ten, kdo má token k soukromému repozitáři s daty. Adresa appky je veřejná, ale bez tokenu je appka prázdná.
+Ostatní se přihlašují jen **jménem a heslem**. Data vidí jen ten, kdo má od tebe přístup.
 
-1. Pro každého člověka vytvoř **vlastní token** stejně jako v kroku 4 výše (jen repozitář s daty, Contents: Read and write) a pojmenuj ho jeho jménem, třeba `evidence – ředitel`. GitHub účet ten člověk mít nemusí.
-2. Pošli mu adresu appky a token. Token posílej odděleně a bezpečně, nejlépe osobně nebo přes správce hesel, ne veřejným chatem.
-3. On si v appce v Nastavení vyplní uživatele, repozitář, **svoje jméno** a token a dá Připojit.
-4. Když s vámi přestane spolupracovat nebo ztratí telefon, smaž na GitHubu jen jeho token. Ostatní to neovlivní.
+**Jednou na začátku:** tvůj vlastní token musí kromě repozitáře s daty smět zapisovat i do repozitáře s appkou (`evidence`), protože tam appka ukládá soubor `pristupy.json`. Na GitHubu: Settings → Developer settings → Fine-grained tokens → tvůj token → **Edit** → Repository access → přidej `evidence` → **Update**.
 
-Kdo má token, vidí a může měnit všechno, včetně financí.
+**Pro každého nového člověka:**
+1. Na GitHubu mu vytvoř vlastní token stejně jako v kroku 4 výše: jen repozitář s daty, Contents: Read and write.
+2. V appce v Nastavení → **Přístupy pro další lidi** vyplň jméno, kterým se bude přihlašovat, a vlož jeho token. Heslo appka vygeneruje.
+3. Dej **Vytvořit přístup** a pošli mu adresu, jméno a heslo. Heslo nejlépe jinou cestou než adresu.
+4. On v appce v Nastavení zadá jméno a heslo a dá **Přihlásit se**. Na každém zařízení jen jednou.
+
+Token se do `pristupy.json` ukládá zašifrovaný jeho heslem, bez hesla je k ničemu.
+
+**Odebrání:** v appce u jména dej **Odebrat** a na GitHubu smaž i jeho token. Teprve smazáním tokenu přestane appka fungovat i na zařízeních, kde je už přihlášený.
+
+Kdo je přihlášený, vidí a může měnit všechno, včetně financí.
 
 ### Když pracuje víc lidí najednou
 

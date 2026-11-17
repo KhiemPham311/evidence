@@ -602,7 +602,7 @@ const VIEWS = {
   prehled(){
     if (isEmpty()) return `<div class="welcome"><h2>Vítej v evidenci</h2>
       <p>Zatím tu nejsou žádná data. Vyber, jak začít. Všechno jde později změnit v Nastavení.</p>
-      <div class="acts"><button class="btn primary" data-act="xlsx-import">Nahrát Excel</button><button class="btn" data-act="import">Nahrát zálohu (.json)</button><button class="btn" data-act="demo">Vyzkoušet na ukázce</button><a class="btn" href="#nastaveni" style="text-decoration:none">Připojit GitHub</a></div>
+      <div class="acts"><a class="btn primary" href="#nastaveni" style="color:var(--btn-ink)">Přihlásit se</a><button class="btn" data-act="xlsx-import">Nahrát Excel</button><button class="btn" data-act="import">Nahrát zálohu (.json)</button><button class="btn" data-act="demo">Vyzkoušet na ukázce</button></div>
       <p class="hint">Excel může být i původní tabulka evidence. Appka v něm najde listy s dětmi a platbami a před uložením ukáže, co nahraje. Ukázka obsahuje smyšlené děti a učitele a jde kdykoli smazat.</p></div>`;
     const f = monthFin(U.ym), act = S.students.filter(isActive);
     const cs = S.courses.filter(c => c.active !== false), capC = cs.filter(c => capOf(c));
@@ -741,21 +741,34 @@ const VIEWS = {
   nastaveni(){
     const c = GH.cfg || {}, connected = !!GH.cfg;
     return `<div class="settings">
-      <section class="panel"><h3>Ukládání na GitHub</h3>
-        <p>Data se ukládají do souboru data.json v tvém soukromém repozitáři. Každá změna je commit, takže máš celou historii a zálohu. Token zůstává jen v tomto prohlížeči.</p>
+      ${connected ? "" : `<section class="panel"><h3>Přihlášení</h3><p>Jméno a heslo ti dá správce evidence. Na tomhle zařízení se pak přihlašuješ jen jednou.</p>
+        <form class="form" id="loginForm" novalidate>
+          <label>Jméno<input type="text" id="lg_name" autocomplete="username" autocapitalize="off"></label>
+          <label>Heslo<input type="password" id="lg_pass" autocomplete="current-password" autocapitalize="off" spellcheck="false"></label>
+          <div class="full"><button class="btn primary" type="submit">Přihlásit se</button></div></form><p class="err" id="lgErr"></p></section>`}
+      ${connected ? `<section class="panel"><h3>${c.via === "login" ? `Přihlášen(a) jako ${esc(c.name || "")}` : "Ukládání na GitHub"}</h3>
+        <p>Data se ukládají do souboru data.json v soukromém repozitáři na GitHubu. Každá změna je uložená v historii.</p>
         ${connected ? `<p><span id="ghPill" class="pill ${GH.state === "ok" ? "good" : GH.state === "err" ? "bad" : "warn"}">${esc(GH.msg || "Připojeno")}</span> ${esc(c.owner)}/${esc(c.repo)} · ${esc(c.path)}</p>
           <div class="bar" style="margin:0 0 12px"><div class="grow"><input type="text" id="gh_me" value="${esc(c.name || "")}" placeholder="Tvoje jméno, třeba Khiem nebo ředitel" aria-label="Tvoje jméno do historie změn" autocomplete="off"></div><button class="btn" data-act="ghname">Uložit jméno</button></div>
           <p>Appka každou minutu načte změny ostatních a spojí je s tvými. Když dva lidé změní stejnou věc zároveň, platí ta pozdější. Kdo co kdy změnil, uvidíš v <a href="${esc(GH.historyUrl())}" target="_blank" rel="noopener">historii na GitHubu</a>.</p>
-          <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="ghpush">Uložit teď</button><button class="btn" data-act="ghpull">Načíst změny</button><button class="btn danger" data-act="ghoff">Odpojit</button></div>`
-        : `<form class="form" id="ghForm" novalidate>
-          <label>Uživatel nebo organizace na GitHubu<input type="text" id="gh_owner" autocomplete="off" spellcheck="false" placeholder="napr. sea-l-doucovani" value="${esc(c.owner||"")}"></label>
+          <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="ghpush">Uložit teď</button><button class="btn" data-act="ghpull">Načíst změny</button><button class="btn danger" data-act="ghoff">${c.via === "login" ? "Odhlásit" : "Odpojit"}</button></div>`
+        : ""}</section>
+      ${c.via !== "login" ? `<section class="panel"><h3>Přístupy pro další lidi</h3>
+        <p>Ředitel, zástupce a další se přihlásí jen jménem a heslem. Každému na GitHubu vytvoř vlastní token (stejně jako svůj, jen pro ${esc(c.repo)}). Appka ho zašifruje jeho heslem a uloží do souboru ${ACCESS_FILE} vedle appky.</p>
+        <div class="sheet" id="accessList"><div class="empty">Načítám…</div></div>
+        <form class="form" id="accessForm" novalidate style="margin-top:12px">
+          <label>Jméno, kterým se přihlásí<input type="text" id="acc_name" autocomplete="off" placeholder="napr. Ředitel"></label>
+          <label>Heslo (vygenerované)<span style="display:flex;gap:6px"><input type="text" id="acc_pass" autocomplete="off" spellcheck="false" value="${newPassword()}"><button class="btn small" type="button" id="accNewPass" title="Vygenerovat jiné heslo">Nové</button></span></label>
+          <label class="full">Token pro tohoto člověka (github_pat_…)<input type="password" id="acc_token" autocomplete="off" spellcheck="false"></label>
+          <div class="full"><button class="btn primary" type="submit">Vytvořit přístup</button></div></form><p class="err" id="accErr"></p><div id="accResult"></div></section>` : ""}` : `<details class="panel"><summary style="cursor:pointer;font-weight:700">Ruční připojení (pro správce)</summary><p style="margin-top:10px">Pro správce, který má vlastní token z GitHubu.</p>
+          <form class="form" id="ghForm" novalidate>
+          <label>Uživatel na GitHubu (ne křestní jméno)<input type="text" id="gh_owner" autocomplete="off" spellcheck="false" placeholder="napr. KhiemPham311" value="${esc(c.owner||"")}"></label>
           <label>Soukromý repozitář pro data<input type="text" id="gh_repo" autocomplete="off" spellcheck="false" placeholder="napr. evidende-data" value="${esc(c.repo||"")}"></label>
           <label>Větev<input type="text" id="gh_branch" autocomplete="off" spellcheck="false" value="${esc(c.branch||"main")}"></label>
           <label>Soubor<input type="text" id="gh_path" autocomplete="off" spellcheck="false" value="${esc(c.path||"data.json")}"></label>
           <label>Tvoje jméno (podepíše změny v historii)<input type="text" id="gh_name" autocomplete="off" placeholder="napr. Khiem" value="${esc(c.name||"")}"></label>
           <label class="full">Token (fine-grained, jen pro tento repozitář, Contents: Read and write)<input type="password" id="gh_token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
-          <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p>`}
-      </section>
+          <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p></details>`}
       <section class="panel"><h3>Excel</h3><p>Stáhni všechna data do Excelu (přehled po měsících, děti, kurzy, učitelé, platby, docházka, lekce, výdaje), nebo data z Excelu nahraj. Nahrání nic nemaže: děti a záznamy přidá nebo upraví podle jména a před uložením ukáže, co se změní. Umí i původní tabulku Evidence centrum.</p>
         <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="xlsx-export">Stáhnout Excel</button><button class="btn" data-act="xlsx-import">Nahrát Excel</button></div></section>
       <section class="panel"><h3>Záloha</h3><p>Úplná záloha appky v jednom souboru (.json). Obnova přepíše všechno, co je teď v appce.</p>
@@ -795,7 +808,16 @@ function paintNotice(){
   if (GH.state === "err") n.push(`<div class="note bad"><span class="grow">${esc(GH.msg)} Změny jsou zatím uložené v prohlížeči.</span><button class="btn small" data-act="ghpush">Zkusit znovu</button></div>`);
   $("#notice").innerHTML = n.join("");
 }
-function render(){ $("#view").innerHTML = VIEWS[U.view](); }
+function render(){
+  const keep = {}; let result = "";
+  if (U.view === "nastaveni") { $$("#view form input").forEach(i => { if (i.id) keep[i.id] = i.value; }); result = $("#accResult") ? $("#accResult").innerHTML : ""; }
+  $("#view").innerHTML = VIEWS[U.view]();
+  if (U.view === "nastaveni") {
+    Object.entries(keep).forEach(([id, v]) => { const i = document.getElementById(id); if (i && v !== "") i.value = v; });
+    if (result && $("#accResult")) { $("#accResult").innerHTML = result; const b = $("#accCopy"); const pre = $("#accResult pre"); if (b && pre) b.onclick = () => navigator.clipboard.writeText(pre.textContent).then(() => toast("Zkopírováno.")).catch(() => toast("Kopírování nejde, označ text ručně.")); }
+    if ($("#accessList")) renderAccessPanel();
+  }
+}
 function renderKeepFocus(){
   const a = document.activeElement, k = a && a.dataset ? a.dataset.k : null;
   const sel = k && a.selectionStart != null ? [a.selectionStart, a.selectionEnd] : null;
@@ -1189,6 +1211,113 @@ async function exportExcel(){
 }
 
 /* =========================================================
+   Přihlášení jménem a heslem (zašifrované tokeny v pristupy.json)
+   ========================================================= */
+const ACCESS_FILE = "pristupy.json";
+function appRepo(){
+  if (window.__APP_REPO) return window.__APP_REPO;
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/i); if (!m) return null;
+  const seg = location.pathname.split("/").filter(Boolean)[0];
+  return {owner:m[1], repo: seg && !/\.html?$/i.test(seg) ? seg : `${m[1]}.github.io`, branch:"main"};
+}
+const b64 = u8 => { let s = ""; u8.forEach(c => { s += String.fromCharCode(c); }); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function kdf(pass, salt, iter){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(pass).normalize("NFC")), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function seal(text, pass){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 600000;
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, await kdf(pass, salt, iter), new TextEncoder().encode(text)));
+  return {salt:b64(salt), iv:b64(iv), ct:b64(ct), iter};
+}
+async function unseal(box, pass){
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(box.iv)}, await kdf(pass, unb64(box.salt), box.iter), unb64(box.ct));
+  return new TextDecoder().decode(pt);
+}
+function newPassword(){
+  const abc = "abcdefghjkmnpqrstuvwxyz23456789", out = [];
+  while (out.length < 12) { const b = crypto.getRandomValues(new Uint8Array(1))[0]; if (b < abc.length * 8) out.push(abc[b % abc.length]); }
+  return out.join("").replace(/(.{4})(?=.)/g, "$1-");
+}
+const ACC = {
+  data:null, sha:null,
+  url(){ const a = appRepo(); return a ? `https://api.github.com/repos/${encodeURIComponent(a.owner)}/${encodeURIComponent(a.repo)}/contents/${ACCESS_FILE}` : null; },
+  async load(withToken){
+    const a = appRepo(), u = this.url();
+    if (u) {
+      const r = await ghFetch(`${u}?ref=${encodeURIComponent(a.branch || "main")}&t=${Date.now()}`, {headers: withToken && GH.cfg ? GH.headers() : {"Accept":"application/vnd.github+json"}, cache:"no-store"});
+      if (r.status === 404) { this.data = {v:1, users:[]}; this.sha = null; return this.data; }
+      if (r.ok) { const j = await r.json(); this.sha = j.sha; this.data = JSON.parse(GH.dec(j.content || "") || "{}"); }
+      else if (!withToken) { try { const f = await fetch(ACCESS_FILE + "?t=" + Date.now(), {cache:"no-store"}); this.data = f.ok ? await f.json() : {v:1, users:[]}; } catch(e) { throw await GH.error(r); } }
+      else throw await GH.error(r);
+    } else { const f = await fetch(ACCESS_FILE + "?t=" + Date.now(), {cache:"no-store"}).catch(() => null); this.data = f && f.ok ? await f.json() : {v:1, users:[]}; }
+    if (!Array.isArray(this.data.users)) this.data.users = [];
+    return this.data;
+  },
+  async save(message){
+    const a = appRepo(); if (!a) throw new Error("Přístupy jde spravovat jen v appce na adrese github.io.");
+    const body = {message, content:GH.enc(JSON.stringify(this.data, null, 1)), branch:a.branch || "main"}; if (this.sha) body.sha = this.sha;
+    const r = await ghFetch(this.url(), {method:"PUT", headers:{...GH.headers(), "Content-Type":"application/json"}, body:JSON.stringify(body)});
+    if (r.status === 404 || r.status === 403) throw new Error(`Tvůj token nemůže zapisovat do repozitáře s appkou (${a.repo}). Na GitHubu otevři Settings → Developer settings → Fine-grained tokens → svůj token → Edit, v Repository access přidej i ${a.repo} a ulož. Pak to zkus znovu.`);
+    if (r.status === 409 || r.status === 422) throw new Error("Soubor s přístupy se mezitím změnil. Obnov stránku a zkus to znovu.");
+    if (!r.ok) throw await GH.error(r);
+    const j = await r.json(); this.sha = j.content && j.content.sha;
+  }
+};
+async function loginWith(name, pass, errEl){
+  if (!name || !pass) { errEl.textContent = "Vyplň jméno i heslo."; return; }
+  errEl.textContent = "Ověřuji…";
+  try {
+    const acc = await ACC.load(false);
+    const u = acc.users.find(x => norm(x.name) === norm(name));
+    let cfg = null;
+    if (u) { try { cfg = JSON.parse(await unseal(u.box, pass)); } catch(e) { cfg = null; } }
+    if (!cfg) { errEl.textContent = "Špatné jméno nebo heslo."; return; }
+    await connectWith({...cfg, name:u.name, via:"login"}, errEl);
+  } catch(e) { errEl.textContent = e.message || "Přihlášení se nepovedlo."; }
+}
+async function renderAccessPanel(){
+  const box = $("#accessList"); if (!box) return;
+  try {
+    const acc = await ACC.load(true);
+    if (!$("#accessList")) return;
+    $("#accessList").innerHTML = acc.users.length ? acc.users.map(u => `<div class="row r-two"><span><span class="name">${esc(u.name)}</span><div class="sub">přístup od ${esc(u.added ? dateLabel(u.added) + " " + u.added.slice(0,4) : "—")}</div></span><button class="btn small danger" data-acc-del="${esc(u.id)}">Odebrat</button></div>`).join("")
+      : `<div class="empty">Zatím nikdo. Přidej prvního člověka formulářem níže.</div>`;
+  } catch(e) { if ($("#accessList")) $("#accessList").innerHTML = `<div class="empty" style="color:var(--bad)">${esc(e.message)}</div>`; }
+}
+async function addAccess(){
+  const name = $("#acc_name").value.trim(), pass = $("#acc_pass").value.trim(), token = $("#acc_token").value.trim(), err = $("#accErr");
+  $("#accResult").innerHTML = "";
+  if (!name || !token) { err.textContent = "Vyplň jméno a token pro tohoto člověka."; return; }
+  if (pass.length < 10) { err.textContent = "Heslo musí mít aspoň 10 znaků. Nech raději to vygenerované."; return; }
+  err.textContent = "Ověřuji token…";
+  try {
+    const cfg = {owner:GH.cfg.owner, repo:GH.cfg.repo, branch:GH.cfg.branch, path:GH.cfg.path, token};
+    const t = await ghFetch(`https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}`, {headers:{"Authorization":"Bearer " + token, "Accept":"application/vnd.github+json"}, cache:"no-store"});
+    if (!t.ok) { err.textContent = `Token pro ${name} k repozitáři ${cfg.repo} nefunguje. Zkontroluj, že má vybraný ${cfg.repo} a Contents: Read and write.`; return; }
+    const tj = await t.json(); if (tj.permissions && tj.permissions.push === false) { err.textContent = "Token má jen čtení. Dej mu Contents: Read and write."; return; }
+    err.textContent = "Ukládám přístup…";
+    await ACC.load(true);
+    if (ACC.data.users.some(u => norm(u.name) === norm(name))) { err.textContent = `Přístup pro jméno „${name}“ už existuje. Zvol jiné jméno, nebo ten starý nejdřív odeber.`; return; }
+    ACC.data.users.push({id:uid(), name, added:todayStr, box: await seal(JSON.stringify(cfg), pass)});
+    await ACC.save(`Přístup do evidence: ${name}`);
+    err.textContent = "";
+    const msg = `Evidence doučování SEA-l\n${location.origin}${location.pathname}\nJméno: ${name}\nHeslo: ${pass}`;
+    $("#accResult").innerHTML = `<div class="note" style="margin:12px 0 0;display:grid;gap:8px"><b>Přístup pro ${esc(name)} je hotový.</b><span>Pošli mu tohle (heslo ideálně jinou cestou než odkaz):</span><pre style="margin:0;white-space:pre-wrap;font:inherit">${esc(msg)}</pre><div><button class="btn small" id="accCopy">Zkopírovat</button></div><span class="sub">Heslo si nikde neukládám, potom už ho neuvidíš. Kdyby ho zapomněl, odeber ho a vytvoř přístup znovu.</span></div>`;
+    $("#accCopy").onclick = () => navigator.clipboard.writeText(msg).then(() => toast("Zkopírováno.")).catch(() => toast("Kopírování nejde, označ text ručně."));
+    $("#acc_name").value = ""; $("#acc_token").value = ""; $("#acc_pass").value = newPassword();
+    renderAccessPanel();
+  } catch(e) { err.textContent = e.message || "Uložení přístupu se nepovedlo."; }
+}
+function delAccess(id){
+  const u = (ACC.data && ACC.data.users || []).find(x => x.id === id); if (!u) return;
+  confirmDlg(`Odebrat přístup pro ${u.name}?`, `${u.name} se už nepřihlásí jménem a heslem. Na zařízeních, kde je přihlášený, ale appka funguje dál, dokud na GitHubu nesmažeš i jeho token. Udělej obojí.`, "Odebrat", async () => {
+    try { await ACC.load(true); ACC.data.users = ACC.data.users.filter(x => x.id !== id); await ACC.save(`Odebrán přístup: ${u.name}`); toast(`Přístup pro ${u.name} odebrán. Nezapomeň smazat i jeho token na GitHubu.`); renderAccessPanel(); }
+    catch(e){ toast(e.message); } }, true);
+}
+
+/* =========================================================
    Akce
    ========================================================= */
 function setMark(cid, sid, v){
@@ -1222,25 +1351,30 @@ $("#importFile").addEventListener("change", e => {
   rd.readAsText(file);
 });
 async function connectGitHub(){
-  const cfg = { owner:$("#gh_owner").value.trim(), repo:$("#gh_repo").value.trim(), branch:$("#gh_branch").value.trim() || "main", path:$("#gh_path").value.trim().replace(/^\/+/,"") || "data.json", token:$("#gh_token").value.trim(), name:$("#gh_name").value.trim() };
+  const cfg = { owner:$("#gh_owner").value.trim(), repo:$("#gh_repo").value.trim(), branch:$("#gh_branch").value.trim() || "main", path:$("#gh_path").value.trim().replace(/^\/+/,"") || "data.json", token:$("#gh_token").value.trim(), name:$("#gh_name").value.trim(), via:"manual" };
   const err = $("#ghErr");
   if (!cfg.owner || !cfg.repo || !cfg.token) { err.textContent = "Vyplň uživatele, repozitář a token."; return; }
+  if (/\s/.test(cfg.owner)) { err.textContent = "Uživatel na GitHubu nemá mezery. Je to přihlašovací jméno z adresy github.com/…, například KhiemPham311."; return; }
+  await connectWith(cfg, err);
+}
+async function connectWith(cfg, err){
   err.textContent = "Ověřuji…"; GH.cfg = cfg;
   try {
     const r = await ghFetch(GH.url(), {headers:GH.headers(), cache:"no-store"});
-    if (!r.ok) throw await GH.error(r);
+    if (!r.ok) { const e2 = await GH.error(r); if (r.status === 404) e2.message = `Repozitář ${cfg.owner}/${cfg.repo} nebyl nalezen, nebo k němu token nemá přístup. Zkontroluj uživatele na GitHubu (např. KhiemPham311), název repozitáře a že je v tokenu vybraný.`; throw e2; }
     const repo = await r.json();
     if (!repo.private) { GH.cfg = null; err.textContent = "Tento repozitář je veřejný. Data dětí patří do soukromého repozitáře, jinak by je viděl kdokoli."; return; }
     if (repo.permissions && repo.permissions.push === false) throw new Error("Token má k repozitáři jen čtení. Dej mu oprávnění Contents: Read and write.");
     GH.base = null; GH.sha = null;
     const remote = await GH.get();
+    const hello = cfg.via === "login" ? `Přihlášen(a) jako ${cfg.name}.` : "Připojeno.";
     const done = msg => { GH.saveCfg(); saveLocal(); GH.saveBase(); GH.set("ok", "Aktuální z GitHubu " + GH.stamp()); renderAll(); toast(msg); };
-    if (!remote) { GH.saveCfg(); await GH.put(); return done("Připojeno. Data jsou uložená na GitHubu."); }
-    if (isEmpty() || S.demo || same(S, remote)) { S = remote; GH.base = clone(remote); return done("Připojeno. Data načtena z GitHubu."); }
+    if (!remote) { GH.saveCfg(); await GH.put(); return done(`${hello} Data jsou uložená na GitHubu.`); }
+    if (isEmpty() || S.demo || same(S, remote)) { S = remote; GH.base = clone(remote); return done(`${hello} Data načtena z GitHubu.`); }
     openDlg(`<h3 id="dlgTitle">Která data použít?</h3><p>Na GitHubu už data jsou (${pl(remote.students.length, "dítě", "děti", "dětí")}) a v tomto prohlížeči máš jiná (${pl(S.students.length, "dítě", "děti", "dětí")}). Obvykle chceš data z GitHubu, ta jsou společná pro všechny.</p>
       <div class="actions"><button class="btn danger left" id="g_local">Přepsat GitHub daty z prohlížeče</button><button class="btn primary" id="g_remote">Použít data z GitHubu</button></div>`, "#g_remote");
-    $("#g_remote").onclick = () => { closeDlg(); S = remote; GH.base = clone(remote); done("Připojeno. Data načtena z GitHubu."); };
-    $("#g_local").onclick = async () => { closeDlg(); GH.saveCfg(); try { GH.base = clone(remote); await GH.put(); done("Připojeno. Data z prohlížeče jsou na GitHubu."); } catch(e2) { GH.set("err", e2.message); renderAll(); } };
+    $("#g_remote").onclick = () => { closeDlg(); S = remote; GH.base = clone(remote); done(`${hello} Data načtena z GitHubu.`); };
+    $("#g_local").onclick = async () => { closeDlg(); GH.saveCfg(); try { GH.base = clone(remote); await GH.put(); done(`${hello} Data z prohlížeče jsou na GitHubu.`); } catch(e2) { GH.set("err", e2.message); renderAll(); } };
   } catch(e) { GH.cfg = null; GH.base = null; GH.state = "off"; err.textContent = e.message || "Připojení se nepovedlo."; paintSync(); }
 }
 
@@ -1273,6 +1407,8 @@ document.addEventListener("click", e => {
   if (act === "import") return $("#importFile").click();
   if (act === "xlsx-import") { loadXLSX().catch(() => {}); return $("#xlsxFile").click(); }
   if (act === "xlsx-export") return exportExcel();
+  if (t.id === "accNewPass") { $("#acc_pass").value = newPassword(); return; }
+  if (t.dataset.accDel) return delAccess(t.dataset.accDel);
   if (act === "export") return exportData();
   if (act === "demo" && GH.cfg) return toast("Ukázka by přepsala společná data na GitHubu. Nejdřív v Nastavení GitHub odpoj.");
   if (act === "demo") { const go = () => { S = demoData(); saveLocal(); GH.schedule(); U.ym = todayYm; location.hash = "#prehled"; renderAll(); toast("Načtena ukázková data."); };
@@ -1282,10 +1418,16 @@ document.addEventListener("click", e => {
   if (act === "groups") { const gs = $("#groupsInput").value.split(",").map(x => x.trim()).filter(Boolean); commit(D => { D.settings.groups = [...new Set(gs)]; }); return toast("Skupiny uloženy."); }
   if (act === "ghpush") return GH.push().then(renderAll);
   if (act === "ghpull") return GH.refresh().then(renderAll);
-  if (act === "ghoff") return confirmDlg("Odpojit GitHub?", "Data zůstanou v tomto prohlížeči i na GitHubu. Token se z prohlížeče smaže.", "Odpojit", () => { GH.cfg = null; GH.sha = null; GH.saveCfg(); GH.state = "off"; renderAll(); });
+  if (act === "ghoff") return confirmDlg(GH.cfg && GH.cfg.via === "login" ? "Odhlásit se?" : "Odpojit GitHub?", "Data zůstanou na GitHubu. Z tohoto prohlížeče se smažou data i přihlášení.", GH.cfg && GH.cfg.via === "login" ? "Odhlásit" : "Odpojit", async () => {
+    if (GH.state === "pending" || GH.state === "err") { try { await GH.push(); } catch(e2){} }
+    clearTimeout(GH.timer); GH.cfg = null; GH.sha = null; GH.base = null; GH.saveCfg(); GH.state = "off"; S = blank(); S.settings.startYm = todayYm; saveLocal(); location.hash = "#nastaveni"; renderAll(); toast("Odhlášeno."); });
   if (act === "ghname") { const v = $("#gh_me").value.trim(); GH.cfg.name = v; GH.saveCfg(); return toast(v ? `Změny se v historii podepíšou jako ${v}.` : "Jméno smazáno."); }
 });
-document.addEventListener("submit", e => { if (e.target.id === "ghForm") { e.preventDefault(); connectGitHub(); } });
+document.addEventListener("submit", e => {
+  if (e.target.id === "ghForm") { e.preventDefault(); connectGitHub(); }
+  if (e.target.id === "loginForm") { e.preventDefault(); loginWith($("#lg_name").value.trim(), $("#lg_pass").value, $("#lgErr")); }
+  if (e.target.id === "accessForm") { e.preventDefault(); addAccess(); }
+});
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeDlg();
   const d = e.target.dataset || {};
