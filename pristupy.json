@@ -1,0 +1,16 @@
+{
+ "v": 1,
+ "users": [
+  {
+   "id": "egzs2ldpyv",
+   "name": "Jirka",
+   "added": "2026-11-17",
+   "box": {
+    "salt": "HEC4Ut3PO54GWYY7ivR9+g==",
+    "iv": "tX3TCvtuCB0KuIVV",
+    "ct": "kE8Cfthy18yl4j+fadWIMifpd33zkeUrmo0h4O3y0B7B3nAv8fgxWs0sBCi6hVcg704nnuHKHt70kTy8McuGuxBtb9bi+f4KHNHQp3inRlL1x4gnYx0E8xS6BmDovRmxEpLJej3oTz4ck5Jdtilgi9sqUAjdsgIcwNzrvBeNWurW3GIzy3kaAT+vW0HQBHVVwFiZSxnar3HpLVl9Vc7Bv6zoQMPYMCILUZm93cju9K9MAxfYKfG705FwO0Oo0/KDv2MQFBN7xvMhXQ==",
+    "iter": 600000
+   }
+  }
+ ]
+}
