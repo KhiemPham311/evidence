@@ -233,6 +233,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand-ink);flex:n
 <div class="overlay" id="overlay"><div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
+<input type="file" id="xlsxFile" accept=".xlsx,.xls,.ods,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
 
 <script>
 "use strict";
@@ -535,12 +536,12 @@ const TOOLS = {
       <div class="grow"><input type="search" id="q" placeholder="Hledat jméno, rodiče, telefon…" value="${esc(U.q)}" aria-label="Hledat"></div>
       <div class="w"><select id="fGroup" aria-label="Skupina">${groupOptions(U.group, true)}</select></div>
       <div class="w"><select id="fCourse" aria-label="Kurz">${courseOptions(U.course, "Všechny kurzy")}<option value="__none"${U.course === "__none" ? " selected" : ""}>Bez kurzu</option></select></div>
-      <button class="btn primary" id="addKid">+ Přidat dítě</button></div>
+      <button class="btn" data-act="xlsx-import">Nahrát Excel</button><button class="btn primary" id="addKid">+ Přidat dítě</button></div>
     <div class="bar"><div class="chips" id="fStatus">${[["aktivni","Aktivní"],["neaktivni","Neaktivní"],["","Všichni"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${U.status===v}">${l}</button>`).join("")}</div></div>`,
   kurzy: () => `<div class="bar"><span class="grow"></span><button class="btn primary" id="addCourse">+ Přidat kurz</button></div>`,
   dochazka: () => `<div class="bar"><div class="w"><input type="date" id="date" value="${U.date}" aria-label="Datum lekce"></div>
       <button class="btn" data-day="-1">Předchozí den</button><button class="btn" data-day="0">Dnes</button><button class="btn" data-day="1">Další den</button></div>`,
-  finance: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addExp">+ Přidat výdaj</button></div>`,
+  finance: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn" data-act="xlsx-export">Stáhnout Excel</button><button class="btn primary" id="addExp">+ Přidat výdaj</button></div>`,
   ucitele: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addTeacher">+ Přidat učitele</button></div>`,
   nastaveni: () => ""
 };
@@ -550,8 +551,8 @@ const VIEWS = {
   prehled(){
     if (isEmpty()) return `<div class="welcome"><h2>Vítej v evidenci</h2>
       <p>Zatím tu nejsou žádná data. Vyber, jak začít. Všechno jde později změnit v Nastavení.</p>
-      <div class="acts"><button class="btn primary" data-act="import">Nahrát soubor s daty</button><button class="btn" data-act="demo">Vyzkoušet na ukázce</button><a class="btn" href="#nastaveni" style="text-decoration:none">Připojit GitHub</a></div>
-      <p class="hint">Soubor s daty je záloha ve formátu .json, například data-start.json. Ukázka obsahuje smyšlené děti a učitele a jde kdykoli smazat.</p></div>`;
+      <div class="acts"><button class="btn primary" data-act="xlsx-import">Nahrát Excel</button><button class="btn" data-act="import">Nahrát zálohu (.json)</button><button class="btn" data-act="demo">Vyzkoušet na ukázce</button><a class="btn" href="#nastaveni" style="text-decoration:none">Připojit GitHub</a></div>
+      <p class="hint">Excel může být i původní tabulka evidence. Appka v něm najde listy s dětmi a platbami a před uložením ukáže, co nahraje. Ukázka obsahuje smyšlené děti a učitele a jde kdykoli smazat.</p></div>`;
     const f = monthFin(U.ym), act = S.students.filter(isActive);
     const cs = S.courses.filter(c => c.active !== false), capC = cs.filter(c => capOf(c));
     const seats = capC.reduce((a,c) => a + capOf(c), 0), used = capC.reduce((a,c) => a + Math.min(enrolled(c).length, capOf(c)), 0);
@@ -701,7 +702,9 @@ const VIEWS = {
           <label class="full">Token (fine-grained, jen pro tento repozitář, Contents: Read and write)<input type="password" id="gh_token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
           <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p>`}
       </section>
-      <section class="panel"><h3>Záloha</h3><p>Stáhni si všechna data jako soubor, nebo je ze souboru obnov. Obnova přepíše všechno, co je teď v appce.</p>
+      <section class="panel"><h3>Excel</h3><p>Stáhni všechna data do Excelu (přehled po měsících, děti, kurzy, učitelé, platby, docházka, lekce, výdaje), nebo data z Excelu nahraj. Nahrání nic nemaže: děti a záznamy přidá nebo upraví podle jména a před uložením ukáže, co se změní. Umí i původní tabulku Evidence centrum.</p>
+        <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="xlsx-export">Stáhnout Excel</button><button class="btn" data-act="xlsx-import">Nahrát Excel</button></div></section>
+      <section class="panel"><h3>Záloha</h3><p>Úplná záloha appky v jednom souboru (.json). Obnova přepíše všechno, co je teď v appce.</p>
         <div class="actions" style="justify-content:flex-start"><button class="btn" data-act="export">Stáhnout zálohu</button><button class="btn" data-act="import">Nahrát zálohu</button></div></section>
       <section class="panel"><h3>Skupiny dětí</h3><p>Ročníky nebo jiné skupiny, oddělené čárkou.</p>
         <div class="bar" style="margin:0"><div class="grow"><input type="text" id="groupsInput" value="${esc(S.settings.groups.join(", "))}" aria-label="Skupiny"></div><button class="btn" data-act="groups">Uložit skupiny</button></div></section>
@@ -889,6 +892,250 @@ function expenseDlg(id, preset){
 }
 
 /* =========================================================
+   Excel: export a import
+   ========================================================= */
+const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+let xlsxP = null;
+function loadXLSX(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (!xlsxP) xlsxP = new Promise((res, rej) => {
+    const s = document.createElement("script"); s.src = XLSX_URL;
+    s.onload = () => window.XLSX ? res(window.XLSX) : rej(new Error("Nástroj pro Excel se nenačetl."));
+    s.onerror = () => { xlsxP = null; rej(new Error("Nepodařilo se načíst nástroj pro Excel. Zkontroluj připojení k internetu a zkus to znovu.")); };
+    document.head.appendChild(s); });
+  return xlsxP;
+}
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+const MONTH_KEYS = MONTHS.map(norm);
+const DAY_KEYS = {po:1, pondeli:1, ut:2, utery:2, st:3, streda:3, ct:4, ctvrtek:4, pa:5, patek:5, so:6, sobota:6, ne:7, nedele:7};
+const schoolYm = mi => { const sy = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1; return `${mi >= 7 ? sy : sy + 1}-${pad(mi + 1)}`; };
+const serial = v => { const d = window.XLSX.SSF.parse_date_code(v); return d ? [d.y, d.m, d.d] : null; };
+function toYm(v){
+  if (v == null || v === "") return "";
+  if (typeof v === "number" && v > 20000 && v < 80000) { const d = serial(v); return d ? `${d[0]}-${pad(d[1])}` : ""; }
+  const s = norm(v); let m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})/))) return `${m[1]}-${pad(m[2])}`;
+  if ((m = s.match(/^(\d{1,2})[./ ]+(\d{4})$/))) return `${m[2]}-${pad(m[1])}`;
+  const i = MONTH_KEYS.findIndex(k => s.startsWith(k));
+  if (i >= 0) { const y = s.match(/(\d{4})/); return y ? `${y[1]}-${pad(i + 1)}` : schoolYm(i); }
+  return "";
+}
+function toDate(v){
+  if (v == null || v === "") return "";
+  if (typeof v === "number" && v > 20000 && v < 80000) { const d = serial(v); return d ? `${d[0]}-${pad(d[1])}-${pad(d[2])}` : ""; }
+  const s = String(v).trim(); let m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+  if ((m = s.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/))) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+  return "";
+}
+function toTime(v){
+  if (typeof v === "number" && v >= 0 && v < 1) { const t = Math.round(v * 1440); return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`; }
+  const m = String(v ?? "").match(/(\d{1,2})[:.](\d{2})/); return m ? `${pad(m[1])}:${m[2]}` : "";
+}
+function toNum(v){
+  if (typeof v === "number") return isFinite(v) ? v : null;
+  const s = String(v ?? "").replace(/\s| |kč|czk|,-/gi, "").replace(",", ".");
+  if (!/\d/.test(s)) return null; const n = Number(s.replace(/[^\d.-]/g, "")); return isFinite(n) ? n : null;
+}
+const toBool = v => { const s = norm(v); if (!s) return null; return !["ne","no","0","false","neuci","nebezi","neaktivni","n"].includes(s); };
+const toStatus = v => { const s = norm(v); if (!s) return ""; return s === "2" || s.startsWith("neakt") ? "neaktivni" : "aktivni"; };
+const toMark = v => { const s = norm(v); if (!s) return ""; if (s[0] === "p" || s === "1" || s === "ano") return "P"; if (s[0] === "o") return "O"; if (s[0] === "n" || s[0] === "c" || s[0] === "a" || s === "0") return "N"; return ""; };
+const toMethod = v => { const s = norm(v); if (!s) return null; if (/^(pre|bank|uc|karta|qr)/.test(s)) return "prevod"; if (/^(hot|cash)/.test(s)) return "hotove"; return null; };
+const str = v => { const s = v == null ? "" : String(v).trim(); return /^#(ref|n\/a|name|value|div)/i.test(s) ? "" : s; };
+
+const COLS = {
+  id:["id"], kidId:["id ditete"], courseId:["id kurzu"], name:["jmeno ditete","jmeno","dite","student","zak","jmeno a prijmeni"],
+  group:["skupina","trida","rocnik"], status:["stav","status"], inactiveFrom:["neaktivni od"], from:["chodi od","od mesice"],
+  courses:["kurzy","kurz"], price:["cena","vlastni cena","mesicni cena","cena za mesic","skolne"], parent:["rodic","zakonny zastupce","jmeno rodice"],
+  phone:["telefon","tel","telefon rodice","kontakt","mobil"], email:["e-mail","email","mail"], note:["poznamka","poznamky"],
+  month:["mesic"], paid:["zaplaceno","uhrazeno","zaplatil","hotove"], paidBank:["prevodem","na ucet"], method:["zpusob","zpusob platby","platba"], payDate:["datum platby","zaplaceno dne"],
+  date:["datum","den lekce"], course:["kurz","nazev kurzu"], mark:["stav","dochazka","pritomnost"], topic:["probiralo se","co se probiralo","zapis","tema","obsah lekce"],
+  teachers:["ucitele","ucitel","lektor","lektorka","lektori","lektorky","vyucujici"], title:["nazev","kurz","nazev kurzu"], days:["dny","den"],
+  start:["od","zacatek"], end:["do","konec"], capacity:["kapacita","pocet mist","mist"], room:["mistnost","ucebna"], active:["bezi","uci","aktivni"],
+  rate:["sazba","hodinova sazba","sazba za hodinu"], category:["kategorie","druh"], amount:["castka","suma","vydaj"], forYm:["za mesic"]
+};
+function colIndex(H, key){
+  const al = COLS[key];
+  let i = H.findIndex(h => al.includes(h)); if (i >= 0) return i;
+  return H.findIndex(h => h && al.some(a => a.length >= 4 && h.startsWith(a)));
+}
+function readSheet(X, ws){
+  if (!ws || !ws["!ref"]) return null;
+  const rng = X.utils.decode_range(ws["!ref"]);
+  const rows = X.utils.sheet_to_json(ws, {header:1, defval:"", raw:true, blankrows:true});
+  rows.forEach((r, i) => { r.__row = rng.s.r + i; });
+  let best = -1, bestScore = 0;
+  rows.slice(0, 8).forEach((r, i) => { const H = r.map(norm); const sc = Object.keys(COLS).filter(k => colIndex(H, k) >= 0).length; if (sc > bestScore) { best = i; bestScore = sc; } });
+  if (best < 0 || bestScore < 2) return null;
+  return { H: rows[best].map(norm), rows: rows.slice(best + 1).filter(r => r.some(c => str(c) !== "")), ws, c0: rng.s.c };
+}
+function sheetKind(name, H){
+  const sn = norm(name), has = k => colIndex(H, k) >= 0;
+  if (/^(prehled|souhrn)/.test(sn)) return null;
+  if (/vydaj/.test(sn) || (has("amount") && has("date") && !has("name"))) return {type:"expenses"};
+  if (/ucitel|lektor/.test(sn)) return {type:"teachers"};
+  if (/^kurz/.test(sn)) return {type:"courses"};
+  if (/^(lekce|zapis)/.test(sn)) return {type:"lessons"};
+  const mi = MONTH_KEYS.findIndex(k => sn.startsWith(k));
+  if (has("name") && (has("month") || mi >= 0 || /platb/.test(sn)) && (has("paid") || has("paidBank") || has("price"))) return {type:"payments", ym: mi >= 0 ? toYm(name) : ""};
+  if (/dochaz/.test(sn) || (has("date") && has("name") && has("mark") && !has("paid") && !has("price"))) return {type:"attendance"};
+  if (has("name")) return {type:"kids"};
+  return null;
+}
+function applyWorkbook(D, X, wb){
+  const lines = [], warn = [], missing = new Set();
+  const kidById = new Map(D.students.map(s => [s.id, s])), kidByName = new Map(D.students.map(s => [norm(s.name), s]));
+  const tById = () => new Map(D.teachers.map(t => [t.id, t])), tByName = () => new Map(D.teachers.map(t => [norm(t.name), t]));
+  const cById = () => new Map(D.courses.map(c => [c.id, c])), cByName = () => new Map(D.courses.map(c => [norm(c.name), c]));
+  const findKid = (id, name) => kidById.get(str(id)) || kidByName.get(norm(name));
+  const groupOf = v => { const s0 = str(v), n = norm(s0); if (!n) return "";
+    const gs = D.settings.groups, hit = gs.find(x => norm(x) === n) || gs.find(x => n.length >= 5 && norm(x).slice(0, 5) === n.slice(0, 5));
+    if (hit) return hit; const nice = s0.charAt(0).toUpperCase() + s0.slice(1); gs.push(nice); return nice; };
+  const teacherIdsFrom = (v, create) => str(v).split(/[,;]+/).map(x => x.trim()).filter(Boolean).map(n => {
+    let t = tByName().get(norm(n));
+    if (!t && create) { t = {id:uid(), name:n, phone:"", email:"", rate:"", active:true, note:""}; D.teachers.push(t); }
+    if (!t) warn.push(`Učitel „${n}“ v appce není, u záznamu jsem ho vynechal.`);
+    return t && t.id; }).filter(Boolean);
+  const findCourse = (id, name) => cById().get(str(id)) || cByName().get(norm(name));
+  const kinds = [];
+  wb.SheetNames.forEach(sn => { const data = readSheet(X, wb.Sheets[sn]); if (!data) return; const k = sheetKind(sn, data.H); if (k) kinds.push({sn, ...k, ...data}); });
+  const order = ["teachers","courses","kids","payments","attendance","lessons","expenses"];
+  kinds.sort((a,b) => order.indexOf(a.type) - order.indexOf(b.type));
+  kinds.forEach(k => {
+    const ci = {}; Object.keys(COLS).forEach(key => { ci[key] = colIndex(k.H, key); });
+    const g = (r, key) => ci[key] >= 0 ? r[ci[key]] : "";
+    const isSum = (r, key) => { if (ci[key] < 0) return false; const cell = k.ws[X.utils.encode_cell({r: r.__row, c: ci[key] + k.c0})]; return !!(cell && cell.f && /^(SUM|SUBTOTAL|SOUČET)\(/i.test(cell.f)); };
+    if (k.type === "teachers") { let add = 0, upd = 0;
+      k.rows.forEach(r => { const name = str(g(r,"name") || g(r,"title")); if (!name) return;
+        let t = tById().get(str(g(r,"id"))) || tByName().get(norm(name)); const before = JSON.stringify(t || null);
+        if (!t) { t = {id:uid(), name, phone:"", email:"", rate:"", active:true, note:""}; D.teachers.push(t); add++; }
+        t.name = name; if (str(g(r,"phone"))) t.phone = str(g(r,"phone")); if (str(g(r,"email"))) t.email = str(g(r,"email"));
+        if (toNum(g(r,"rate")) !== null) t.rate = toNum(g(r,"rate")); if (toBool(g(r,"active")) !== null) t.active = toBool(g(r,"active")); if (str(g(r,"note"))) t.note = str(g(r,"note"));
+        if (before !== "null" && before !== JSON.stringify(t)) upd++; });
+      lines.push([k.sn, "Učitelé", `${pl(add, "nový", "noví", "nových")}, ${pl(upd, "upravený", "upravení", "upravených")}`]); }
+    if (k.type === "courses") { let add = 0, upd = 0;
+      k.rows.forEach(r => { const name = str(g(r,"title") || g(r,"name")); if (!name) return;
+        let c = cById().get(str(g(r,"id"))) || cByName().get(norm(name)); const before = JSON.stringify(c || null);
+        if (!c) { c = {id:uid(), name, teacherIds:[], days:[], start:"", end:"", capacity:"", price:"", color:"", room:"", active:true, note:"", since:todayStr}; D.courses.push(c); add++; }
+        c.name = name;
+        if (str(g(r,"teachers"))) c.teacherIds = teacherIdsFrom(g(r,"teachers"), true);
+        if (str(g(r,"days"))) { const ds = [...new Set(norm(g(r,"days")).split(/[^a-z]+/).map(x => DAY_KEYS[x]).filter(Boolean))]; if (ds.length) c.days = ds; }
+        if (toTime(g(r,"start"))) c.start = toTime(g(r,"start")); if (toTime(g(r,"end"))) c.end = toTime(g(r,"end"));
+        if (toNum(g(r,"capacity")) !== null) c.capacity = toNum(g(r,"capacity")); if (toNum(g(r,"price")) !== null) c.price = toNum(g(r,"price"));
+        if (str(g(r,"room"))) c.room = str(g(r,"room")); if (toBool(g(r,"active")) !== null) c.active = toBool(g(r,"active")); if (str(g(r,"note"))) c.note = str(g(r,"note"));
+        if (before !== "null" && before !== JSON.stringify(c)) upd++; });
+      lines.push([k.sn, "Kurzy", `${pl(add, "nový", "nové", "nových")}, ${pl(upd, "upravený", "upravené", "upravených")}`]); }
+    if (k.type === "kids") { let add = 0, upd = 0; const unknownCourses = new Set();
+      k.rows.forEach(r => { const name = str(g(r,"name")); if (!name) return;
+        let s = findKid(g(r,"id") || g(r,"kidId"), name); const before = JSON.stringify(s || null);
+        if (!s) { s = {id:uid(), name, group:"", status:"aktivni", inactiveFrom:"", from:"", parent:"", phone:"", email:"", price:0, note:"", courses:[]}; D.students.push(s); kidById.set(s.id, s); kidByName.set(norm(name), s); add++; }
+        if (s.name !== name && kidById.get(str(g(r,"id"))) === s) { kidByName.delete(norm(s.name)); s.name = name; kidByName.set(norm(name), s); }
+        if (str(g(r,"group"))) s.group = groupOf(g(r,"group"));
+        if (toStatus(g(r,"status"))) s.status = toStatus(g(r,"status"));
+        if (toYm(g(r,"inactiveFrom"))) s.inactiveFrom = toYm(g(r,"inactiveFrom"));
+        if (toYm(g(r,"from"))) s.from = toYm(g(r,"from"));
+        ["parent","phone","email"].forEach(f => { if (str(g(r,f))) s[f] = str(g(r,f)); });
+        { const nv = g(r,"note"); if (typeof nv === "number" && nv > 20000 && nv < 80000) { const d = toDate(nv); s.note = `${Number(d.slice(8))}. ${Number(d.slice(5,7))}. ${d.slice(0,4)}`; } else if (str(nv)) s.note = str(nv); }
+        if (toNum(g(r,"price")) !== null) s.price = toNum(g(r,"price"));
+        if (str(g(r,"courses"))) { const ids = []; str(g(r,"courses")).split(/[,;]+/).map(x => x.trim()).filter(Boolean).forEach(n => { const c = findCourse("", n); if (c) ids.push(c.id); else unknownCourses.add(n); }); if (ids.length) s.courses = [...new Set(ids)]; }
+        if (before !== "null" && before !== JSON.stringify(s)) upd++; });
+      if (unknownCourses.size) warn.push(`Kurzy ${[...unknownCourses].map(x => `„${x}“`).join(", ")} v appce nejsou, děti jsem do nich nezapsal.`);
+      lines.push([k.sn, "Děti", `${pl(add, "nové", "nové", "nových")}, ${pl(upd, "upravené", "upravené", "upravených")}`]); }
+    if (k.type === "payments") { let n = 0; const months = new Set();
+      k.rows.forEach(r => { const name = str(g(r,"name")); if (!name) return;
+        const ym = toYm(g(r,"month")) || k.ym; if (!ym) return;
+        const s = findKid(g(r,"kidId") || g(r,"id"), name); if (!s) { missing.add(name); return; }
+        const m = D.payments[ym] || (D.payments[ym] = {}), p = m[s.id] || {}; const before = JSON.stringify(p);
+        if (["price","paid","paidBank"].some(f => isSum(r, f))) { warn.push(`List ${k.sn}, ${name}: v řádku je místo částky součet sloupce (vzorec SUM). Tenhle řádek jsem přeskočil, částku doplň v appce ručně.`); return; }
+        const pr = toNum(g(r,"price")), cash = toNum(g(r,"paid")), bank = ci.paidBank >= 0 ? toNum(g(r,"paidBank")) : null, dt = toDate(g(r,"payDate"));
+        let me = toMethod(g(r,"method")), pd = cash;
+        if (ci.paidBank >= 0 && (cash !== null || bank !== null)) { const b = bank || 0, c = cash || 0; pd = b + c; if (!me) me = b > 0 && !c ? "prevod" : c > 0 && !b ? "hotove" : null; }
+        if (pr !== null && (pr > 0 || pd > 0)) p.price = pr; if (pd !== null) p.paid = pd || ""; if (me) p.method = me; if (dt) p.date = dt;
+        if (Object.values(p).some(v => v !== "" && v != null)) { m[s.id] = p; if (before !== JSON.stringify(p)) { n++; months.add(ym); } }
+        if (!Object.keys(m).length) delete D.payments[ym]; });
+      lines.push([k.sn, "Platby", `${pl(n, "změněná platba", "změněné platby", "změněných plateb")}${months.size ? " · " + [...months].sort().map(ym => ymLabel(ym).toLowerCase()).join(", ") : ""}`]); }
+    if (k.type === "attendance") { let n = 0; const badCourse = new Set();
+      k.rows.forEach(r => { const d = toDate(g(r,"date")), mk = toMark(g(r,"mark")), name = str(g(r,"name")); if (!d || !mk || !name) return;
+        const c = findCourse(g(r,"courseId"), g(r,"course")); if (!c) { badCourse.add(str(g(r,"course")) || "bez kurzu"); return; }
+        const s = findKid(g(r,"kidId"), name); if (!s) { missing.add(name); return; }
+        const day = D.attendance[d] || (D.attendance[d] = {}), rec = day[c.id] || (day[c.id] = {marks:{}, note:"", teacherIds:[...cT(c)]});
+        rec.marks = rec.marks || {}; if (rec.marks[s.id] !== mk) { rec.marks[s.id] = mk; n++; } });
+      if (badCourse.size) warn.push(`Docházku ke kurzům ${[...badCourse].map(x => `„${x}“`).join(", ")} jsem přeskočil, takové kurzy v appce nejsou.`);
+      lines.push([k.sn, "Docházka", pl(n, "změněný zápis", "změněné zápisy", "změněných zápisů")]); }
+    if (k.type === "lessons") { let n = 0;
+      k.rows.forEach(r => { const d = toDate(g(r,"date")), c = findCourse(g(r,"courseId"), g(r,"course")); if (!d || !c) return;
+        const day = D.attendance[d] || (D.attendance[d] = {}), rec = day[c.id] || (day[c.id] = {marks:{}, note:"", teacherIds:[...cT(c)]}); const before = JSON.stringify(rec);
+        if (str(g(r,"topic"))) rec.note = str(g(r,"topic")); if (str(g(r,"teachers"))) rec.teacherIds = teacherIdsFrom(g(r,"teachers"), false);
+        if (before !== JSON.stringify(rec)) n++;
+        if (!Object.keys(rec.marks||{}).length && !rec.note) { delete day[c.id]; if (!Object.keys(day).length) delete D.attendance[d]; } });
+      lines.push([k.sn, "Zápisy z lekcí", pl(n, "změněný zápis", "změněné zápisy", "změněných zápisů")]); }
+    if (k.type === "expenses") { let add = 0, upd = 0;
+      const sig = e => [e.date, Number(e.amount), norm(e.category), norm(e.note)].join("|"), sigs = new Set(D.expenses.map(sig));
+      k.rows.forEach(r => { const d = toDate(g(r,"date")), a = toNum(g(r,"amount")); if (!d || !(a > 0)) return;
+        const catRaw = str(g(r,"category")), cat = EXP_CATS.find(c => norm(c) === norm(catRaw)) || (catRaw ? "Jiné" : "Jiné");
+        const tn = str(g(r,"teachers")), tid = tn ? (tByName().get(norm(tn))?.id || "") : "";
+        const note = [str(g(r,"note")), catRaw && cat === "Jiné" && norm(catRaw) !== "jine" ? catRaw : ""].filter(Boolean).join(" · ");
+        const data = {date:d, amount:a, category:cat, teacherId: cat === "Lektor" ? tid : "", note, forYm: toYm(g(r,"forYm"))};
+        const ex = D.expenses.find(e => e.id === str(g(r,"id")));
+        if (ex) { const b = JSON.stringify(ex); Object.assign(ex, data); if (b !== JSON.stringify(ex)) upd++; }
+        else if (!sigs.has(sig(data))) { D.expenses.push({id:uid(), ...data}); sigs.add(sig(data)); add++; } });
+      lines.push([k.sn, "Výdaje", `${pl(add, "nový", "nové", "nových")}, ${pl(upd, "upravený", "upravené", "upravených")}`]); }
+  });
+  if (missing.size) { const list = [...missing]; warn.unshift(`${pl(list.length, "jméno", "jména", "jmen")} z plateb nebo docházky v appce nemám, ty řádky jsem přeskočil: ${list.slice(0, 12).join(", ")}${list.length > 12 ? ` a dalších ${list.length - 12}` : ""}. Přidej děti do listu s dětmi nebo v appce a nahraj Excel znovu.`); }
+  return {lines, warn};
+}
+async function importExcel(file){
+  let X; try { X = await loadXLSX(); } catch(e) { toast(e.message); return; }
+  let wb; try { wb = X.read(await file.arrayBuffer(), {type:"array"}); } catch(e) { toast("Soubor se nepodařilo přečíst. Ulož ho v Excelu jako .xlsx a zkus to znovu."); return; }
+  const draft = JSON.parse(JSON.stringify(S));
+  let rep; try { rep = applyWorkbook(draft, X, wb); } catch(e) { console.error(e); toast("Při čtení Excelu nastala chyba: " + (e.message || e)); return; }
+  const changed = JSON.stringify(draft) !== JSON.stringify(S);
+  const zero = rep.lines.filter(l => /^0 [^,·]*(, 0 [^,·]*)?$/.test(l[2])), shown = rep.lines.filter(l => !zero.includes(l));
+  openDlg(`<h3 id="dlgTitle">Nahrát Excel</h3><p class="sub" style="margin:-8px 0 12px">${esc(file.name)}</p>
+    ${rep.lines.length ? `<div class="sheet">${shown.map(([sn, what, txt]) => `<div class="row r-two"><span><span class="name">${esc(what)}</span><div class="sub">list ${esc(sn)}</div></span><span class="sub" style="text-align:right">${esc(txt)}</span></div>`).join("")}${zero.length ? `<div class="row"><span class="sub">Beze změny: ${esc(zero.map(l => l[0]).join(", "))}</span></div>` : ""}</div>`
+      : `<div class="note bad" style="margin:0">V souboru jsem nenašel žádný list, kterému rozumím. Potřebuju aspoň sloupec „Jméno“ a třeba „Skupina“, „Telefon“, „Cena“ nebo „Zaplaceno“ v prvním řádku tabulky.</div>`}
+    ${rep.warn.length ? `<ul class="list-plain" style="margin-top:12px">${rep.warn.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : ""}
+    <p class="hint">Nahrání nic nemaže. Prázdné buňky v Excelu nic nepřepíšou. Děti se párují podle jména (nebo podle ID z exportu této appky).</p>
+    <div class="actions"><button class="btn" id="x_no">Zrušit</button><button class="btn primary" id="x_ok"${changed ? "" : " disabled"}>${changed ? "Nahrát změny" : "Nic ke změně"}</button></div>`, "#x_no");
+  $("#x_no").onclick = closeDlg;
+  $("#x_ok").onclick = () => { closeDlg(); const keep = {demo:S.demo}; commit(D => { Object.keys(D).forEach(k => delete D[k]); Object.assign(D, normalize(draft)); D.demo = keep.demo; }); renderAll(); toast("Excel nahrán."); };
+}
+async function exportExcel(){
+  let X; try { X = await loadXLSX(); } catch(e) { toast(e.message); return; }
+  const wb = X.utils.book_new();
+  const add = (name, header, rows, widths) => {
+    const ws = X.utils.aoa_to_sheet([header, ...rows]);
+    ws["!cols"] = header.map((h, i) => ({wch: (widths && widths[i]) || Math.max(10, h.length + 2)}));
+    if (rows.length) ws["!autofilter"] = {ref: ws["!ref"]};
+    X.utils.book_append_sheet(wb, ws, name); };
+  const yms = [...new Set([...Object.keys(S.payments), ...Object.keys(S.attendance).map(d => d.slice(0,7)), ...S.expenses.map(e => String(e.date||"").slice(0,7)).filter(Boolean), todayYm])].sort();
+  const cname = id => course(id)?.name || "";
+  add("Přehled", ["Měsíc","Kód měsíce","Dětí","Očekáváno","Vybráno","Hotově","Převodem","Zbývá vybrat","Výdaje","Zisk"],
+    yms.map(ym => { const f = monthFin(ym); return [ymLabel(ym), ym, f.kids.length, f.expected, f.received, f.cash, f.bank, Math.max(0, f.expected - f.received), f.spent, f.profit]; }), [16,11,7,12,12,12,12,13,12,12]);
+  add("Děti", ["ID","Jméno","Skupina","Stav","Neaktivní od","Chodí od","Kurzy","Vlastní cena","Rodič","Telefon","E-mail","Poznámka"],
+    [...S.students].sort(byName).map(s => [s.id, s.name, s.group || "", isActive(s) ? "aktivní" : "neaktivní", s.inactiveFrom || "", s.from || "", s.courses.map(cname).filter(Boolean).join(", "), Number(s.price) || "", s.parent || "", s.phone || "", s.email || "", s.note || ""]),
+    [12,30,13,10,12,10,26,12,20,15,24,30]);
+  add("Kurzy", ["ID","Název","Učitelé","Dny","Od","Do","Kapacita","Přihlášeno","Cena","Místnost","Běží","Poznámka"],
+    coursesSorted().map(c => [c.id, c.name, tNames(cT(c)) === "bez učitele" ? "" : tNames(cT(c)), c.days.slice().sort().map(d => DAYS_SHORT[d-1]).join(", "), c.start || "", c.end || "", capOf(c) || "", enrolled(c).length, Number(c.price) || "", c.room || "", c.active === false ? "ne" : "ano", c.note || ""]),
+    [10,22,34,10,7,7,9,11,9,18,6,30]);
+  add("Učitelé", ["ID","Jméno","Telefon","E-mail","Sazba","Učí","Poznámka"],
+    [...S.teachers].sort(byName).map(t => [t.id, t.name, t.phone || "", t.email || "", Number(t.rate) || "", t.active === false ? "ne" : "ano", t.note || ""]), [12,24,15,24,8,6,36]);
+  const pay = []; yms.forEach(ym => { const f = monthFin(ym); [...f.kids].sort(byName).forEach(s => { const p = payRec(s, ym), price = priceOf(s, ym), paid = paidOf(s, ym);
+    pay.push([ym, s.id, s.name, s.group || "", price, paid || "", Math.max(0, price - paid), p.method ? METHODS[p.method] : "", p.date || "", payState(s, ym)[1]]); }); });
+  add("Platby", ["Měsíc","ID dítěte","Jméno","Skupina","Cena","Zaplaceno","Zbývá","Způsob","Datum platby","Stav"], pay, [9,12,30,13,9,10,9,10,13,12]);
+  const att = [], les = [], MK = {P:"Přítomen", N:"Chybí", O:"Omluven"};
+  Object.keys(S.attendance).sort().forEach(d => Object.entries(S.attendance[d]).forEach(([cid, r]) => { const c = course(cid); if (!c) return; const ms = r.marks || {};
+    Object.entries(ms).filter(([, v]) => v).map(([sid, v]) => [student(sid), v]).filter(([s]) => s).sort((a, b) => byName(a[0], b[0])).forEach(([s, v]) => att.push([d, c.name, c.id, s.id, s.name, MK[v]]));
+    const vals = Object.values(ms); les.push([d, DAYS_SHORT[dowOf(d)-1], c.name, c.id, tNames(Array.isArray(r.teacherIds) ? r.teacherIds : cT(c)), r.note || "", vals.filter(v => v === "P").length, vals.filter(v => v === "N").length, vals.filter(v => v === "O").length]); }));
+  add("Docházka", ["Datum","Kurz","ID kurzu","ID dítěte","Jméno","Stav"], att, [11,20,10,12,30,10]);
+  add("Lekce", ["Datum","Den","Kurz","ID kurzu","Učitelé","Probíralo se","Přítomno","Chybí","Omluveno"], les, [11,5,20,10,32,44,9,7,9]);
+  add("Výdaje", ["ID","Datum","Kategorie","Učitel","Částka","Za měsíc","Poznámka"],
+    [...S.expenses].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(e => [e.id, e.date || "", e.category || "", e.teacherId ? tName(e.teacherId) : "", Number(e.amount) || 0, e.forYm || "", e.note || ""]), [12,11,15,22,10,9,36]);
+  X.writeFile(wb, `evidence-${todayStr}.xlsx`, {compression:true});
+  toast("Excel stažen.");
+}
+
+/* =========================================================
    Akce
    ========================================================= */
 function setMark(cid, sid, v){
@@ -964,6 +1211,8 @@ document.addEventListener("click", e => {
   if (t.dataset.wage) { const tch = teacher(t.dataset.wage); return expenseDlg(null, {category:"Lektor", teacherId:tch.id, amount:Number(t.dataset.amount), forYm:U.ym, note:`Výplata za ${ymLabel(U.ym).toLowerCase()}`, date: U.ym < todayYm ? todayStr : `${U.ym}-${pad(daysIn(U.ym))}`}); }
   const act = t.dataset.act;
   if (act === "import") return $("#importFile").click();
+  if (act === "xlsx-import") { loadXLSX().catch(() => {}); return $("#xlsxFile").click(); }
+  if (act === "xlsx-export") return exportExcel();
   if (act === "export") return exportData();
   if (act === "demo") { const go = () => { S = demoData(); saveLocal(); GH.schedule(); U.ym = todayYm; location.hash = "#prehled"; renderAll(); toast("Načtena ukázková data."); };
     return isEmpty() ? go() : confirmDlg("Načíst ukázku?", "Ukázka přepíše všechna současná data. Pokud si je chceš nechat, stáhni si nejdřív zálohu.", "Přepsat ukázkou", go, true); }
@@ -1001,6 +1250,7 @@ document.addEventListener("change", e => {
   if (t.dataset.lt) { const cid = t.dataset.lt, ids = $$(`[data-lt="${cid}"]:checked`).map(x => x.value);
     commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), r = day[cid] || (day[cid] = {marks:{}, note:""}); r.teacherIds = ids; }); }
 });
+$("#xlsxFile").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) importExcel(f); });
 window.addEventListener("hashchange", route);
 window.addEventListener("beforeunload", e => { if (GH.cfg && (GH.state === "pending" || GH.state === "busy")) { GH.push(); e.preventDefault(); e.returnValue = ""; } });
 
