@@ -117,6 +117,15 @@ h2 .sub{font-weight:400}
 .r-wage{grid-template-columns:minmax(0,1.3fr) 5rem 5rem 6rem 7rem 7rem 8.5rem}
 .r-tea{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 6rem minmax(0,1.6fr) 7.5rem}
 .r-att{grid-template-columns:2rem minmax(0,1.6fr) auto}
+table.work td,table.work th{padding:4px 6px;vertical-align:middle}
+table.work th.r,table.work td.r{text-align:center}
+table.work td{text-align:center}
+table.work td:first-child,table.work td:nth-child(2),table.work td:last-child{text-align:left}
+table.work input{width:4.4rem;min-height:32px;padding:3px 6px;text-align:right;font-variant-numeric:tabular-nums}
+table.work input.wn{width:100%;min-width:9rem;text-align:left}
+table.work tr.we td{background:var(--bg)}
+table.work tr.today td{background:var(--cream)}
+table.work tr.tot td{font-weight:700;border-top:2px solid var(--line)}
 .r-two{grid-template-columns:minmax(0,1fr) auto}
 .r-three{grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) auto}
 
@@ -276,13 +285,13 @@ let S = null;
 function blank(){
   return { v:1, updatedAt:"", demo:false,
     settings:{ name:"Evidence doučování", startYm:"", groups:["Předškoláci","Prvňáci","Druháci","Třeťáci","Čtvrťáci","Individuální"] },
-    students:[], teachers:[], courses:[], payments:{}, attendance:{}, expenses:[] };
+    students:[], teachers:[], courses:[], payments:{}, attendance:{}, work:{}, expenses:[] };
 }
 function normalize(d){
   const b = blank(), o = Object.assign(b, d || {});
   o.settings = Object.assign(blank().settings, (d && d.settings) || {});
   ["students","teachers","courses","expenses"].forEach(k => { if (!Array.isArray(o[k])) o[k] = []; });
-  ["payments","attendance"].forEach(k => { if (!o[k] || typeof o[k] !== "object" || Array.isArray(o[k])) o[k] = {}; });
+  ["payments","attendance","work"].forEach(k => { if (!o[k] || typeof o[k] !== "object" || Array.isArray(o[k])) o[k] = {}; });
   o.students.forEach(s => { if (!Array.isArray(s.courses)) s.courses = []; if (!s.id) s.id = uid(); });
   o.courses.forEach(c => { if (!Array.isArray(c.days)) c.days = c.dow ? [c.dow] : []; if (!c.id) c.id = uid();
     if (!Array.isArray(c.teacherIds)) c.teacherIds = c.teacherId ? [c.teacherId] : []; delete c.teacherId; });
@@ -360,6 +369,11 @@ function lessonsHeld(ym){
       if (!Object.values(r.marks||{}).some(Boolean) && !r.note) return;
       out.push({date:d, course:c, teacherIds: Array.isArray(r.teacherIds) ? r.teacherIds : cT(c), hours: hoursOf(c)}); }); });
   return out.sort((a,b) => a.date.localeCompare(b.date));
+}
+function workHours(ym){
+  const m = {};
+  Object.entries(S.work || {}).forEach(([d, w]) => { if (d.slice(0,7) !== ym) return; Object.entries((w && w.hours) || {}).forEach(([tid, v]) => { const n = Number(v) || 0; if (n) m[tid] = (m[tid] || 0) + n; }); });
+  return m;
 }
 function missingLessons(ym){
   const last = ym < (S.settings.startYm || "") ? 0 : ym < todayYm ? daysIn(ym) : ym === todayYm ? Number(todayStr.slice(8)) : 0, out = [];
@@ -726,14 +740,15 @@ const VIEWS = {
   },
   ucitele(){
     if (!S.teachers.length) return `<div class="sheet"><div class="empty">Zatím žádní učitelé. Přidej prvního tlačítkem „Přidat učitele“.</div></div>`;
-    const held = lessonsHeld(U.ym), miss = missingLessons(U.ym);
+    const held = lessonsHeld(U.ym), miss = missingLessons(U.ym), wkh = workHours(U.ym);
     let h = `<div class="sheet"><div class="row head r-tea"><span>Jméno</span><span class="c-tel">Kontakt</span><span class="c-rate">Sazba</span><span class="c-crs">Kurzy</span><span>${ymShort(U.ym)}</span></div>` +
       [...S.teachers].sort(byName).map(t => { const cs = S.courses.filter(c => cT(c).includes(t.id) && c.active !== false), mine = held.filter(x => x.teacherIds.includes(t.id)), m = miss.filter(x => cT(x.course).includes(t.id));
         return `<div class="row click r-tea" data-teacher="${t.id}" tabindex="0" role="button"><span><span class="name">${esc(t.name)}</span> ${t.active === false ? `<span class="pill idle">neaktivní</span>` : ""}${t.note ? `<div class="sub">${esc(t.note)}</div>` : ""}</span>
           <span class="sub c-tel">${esc(t.phone || "")}${t.phone && t.email ? "<br>" : ""}${esc(t.email || "")}</span>
           <span class="num c-rate">${Number(t.rate) ? kc(t.rate) + "/h" : "—"}</span>
           <span class="sub c-crs">${cs.map(c => `${esc(c.name)} (${esc(daysText(c))})`).join(", ") || "žádný kurz"}</span>
-          <span>${pl(mine.length, "lekce", "lekce", "lekcí")}${m.length ? `<br><span class="pill warn">${m.length} nezapsáno</span>` : ""}</span></div>`; }).join("") + `</div>`;
+          <span>${wkh[t.id] ? `${wkh[t.id].toLocaleString("cs-CZ")} h` : pl(mine.length, "lekce", "lekce", "lekcí")}${m.length ? `<br><span class="pill warn">${m.length} nezapsáno</span>` : ""}</span></div>`; }).join("") + `</div>`;
+    h += `<h2>Výkaz hodin za ${ymLabel(U.ym).toLowerCase()}</h2>` + workGrid(U.ym);
     h += `<h2>Výplaty za ${ymLabel(U.ym).toLowerCase()}</h2>` + wageTable(U.ym);
     if (miss.length) h += `<h2>Nezapsaná docházka</h2><div class="sheet">${miss.map(m => `<div class="row r-three"><span class="name">${dateLabel(m.date)} ${DAYS_SHORT[dowOf(m.date)-1]}</span><span class="sub c-mid">${esc(m.course.name)} · ${esc(tNames(cT(m.course)))}</span><button class="btn small" data-goto-date="${m.date}">Zapsat</button></div>`).join("")}</div>`;
     return h;
@@ -769,7 +784,7 @@ const VIEWS = {
           <label>Tvoje jméno (podepíše změny v historii)<input type="text" id="gh_name" autocomplete="off" placeholder="napr. Khiem" value="${esc(c.name||"")}"></label>
           <label class="full">Token (fine-grained, jen pro tento repozitář, Contents: Read and write)<input type="password" id="gh_token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
           <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p></details>`}
-      <section class="panel"><h3>Excel</h3><p>Stáhni všechna data do Excelu (přehled po měsících, děti, kurzy, učitelé, platby, docházka, lekce, výdaje), nebo data z Excelu nahraj. Nahrání nic nemaže: děti a záznamy přidá nebo upraví podle jména a před uložením ukáže, co se změní. Umí i původní tabulku Evidence centrum.</p>
+      <section class="panel"><h3>Excel</h3><p>Stáhni všechna data do Excelu (přehled po měsících, děti, kurzy, učitelé, platby, docházka, lekce, výkaz hodin, výdaje), nebo data z Excelu nahraj. Nahrání nic nemaže: děti a záznamy přidá nebo upraví podle jména a před uložením ukáže, co se změní. Umí i původní tabulku Evidence centrum.</p>
         <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="xlsx-export">Stáhnout Excel</button><button class="btn" data-act="xlsx-import">Nahrát Excel</button></div></section>
       <section class="panel"><h3>Záloha</h3><p>Úplná záloha appky v jednom souboru (.json). Obnova přepíše všechno, co je teď v appce.</p>
         <div class="actions" style="justify-content:flex-start"><button class="btn" data-act="export">Stáhnout zálohu</button><button class="btn" data-act="import">Nahrát zálohu</button></div></section>
@@ -787,16 +802,29 @@ function absenceTable(abs){
     <td>${x.N.length ? `<span class="pill bad">${x.N.length}×</span>` : "—"}</td><td class="num">${[...new Set(x.N)].sort().map(dateLabel).join(", ")}</td>
     <td>${x.O.length ? `<span class="pill warn">${x.O.length}×</span>` : "—"}</td><td class="num">${[...new Set(x.O)].sort().map(dateLabel).join(", ")}</td><td class="r">${x.P}×</td></tr>`).join("")}</tbody></table></div>`;
 }
+function workGrid(ym){
+  const wh = workHours(ym);
+  const ts = [...S.teachers].sort(byName).filter(t => t.active !== false || wh[t.id]);
+  if (!ts.length) return `<div class="sheet"><div class="empty">Zatím žádní učitelé.</div></div>`;
+  const days = [...Array(daysIn(ym))].map((_, i) => `${ym}-${pad(i + 1)}`).filter(d => dowOf(d) <= 5 || (S.work[d] && (Object.keys(S.work[d].hours || {}).length || S.work[d].note)));
+  const cell = (d, t) => { const v = ((S.work[d] || {}).hours || {})[t.id]; return `<td><input type="number" inputmode="decimal" min="0" step="0.5" data-k="wk-${d}-${t.id}" data-wk="${d}" data-t="${t.id}" value="${v ?? ""}" aria-label="${esc(t.name)}, ${dateLabel(d)} – hodin"></td>`; };
+  return `<div class="sheet scroll"><table class="grid work"><thead><tr><th>Datum</th><th>Den</th>${ts.map(t => `<th class="r">${esc(t.name.split(" ")[0])}</th>`).join("")}<th>Poznámka</th></tr></thead><tbody>
+    ${days.map(d => `<tr class="${dowOf(d) > 5 ? "we" : ""}${d === todayStr ? " today" : ""}"><td class="num">${dateLabel(d)}</td><td class="num">${DAYS_SHORT[dowOf(d)-1]}</td>${ts.map(t => cell(d, t)).join("")}<td><input type="text" class="wn" data-k="wkn-${d}" data-wkn="${d}" value="${esc((S.work[d] || {}).note || "")}" aria-label="Poznámka ${dateLabel(d)}"></td></tr>`).join("")}
+    <tr class="tot"><td colspan="2">Celkem hodin</td>${ts.map(t => `<td class="r">${(wh[t.id] || 0).toLocaleString("cs-CZ")}</td>`).join("")}<td></td></tr>
+    <tr><td colspan="2" class="sub">Podle sazby</td>${ts.map(t => `<td class="r sub">${Number(t.rate) ? kc((wh[t.id] || 0) * Number(t.rate)) : "—"}</td>`).join("")}<td></td></tr>
+  </tbody></table></div><p class="hint">Zapiš, kolik hodin která lektorka ten den odučila. Ukládá se hned po opuštění políčka. Víkendy se ukážou, jen když v nich něco je.</p>`;
+}
 function wageTable(ym){
   if (!S.teachers.length) return `<div class="sheet"><div class="empty">Zatím žádní učitelé.</div></div>`;
-  const held = lessonsHeld(ym);
+  const held = lessonsHeld(ym), wh = workHours(ym);
   const paidOut = tid => S.expenses.filter(e => e.category === "Lektor" && e.teacherId === tid && (e.forYm ? e.forYm === ym : (e.date||"").slice(0,7) === ym)).reduce((a,e) => a + (Number(e.amount)||0), 0);
   return `<div class="sheet"><div class="row head r-wage"><span>Učitel</span><span class="c-les">Lekcí</span><span class="c-h">Hodin</span><span class="c-rate">Sazba</span><span>Návrh</span><span>Vyplaceno</span><span></span></div>` +
-    [...S.teachers].sort(byName).filter(t => t.active !== false || held.some(x => x.teacherIds.includes(t.id))).map(t => { const mine = held.filter(x => x.teacherIds.includes(t.id)), hrs = mine.reduce((a,x) => a + x.hours, 0), sug = Math.round(hrs * (Number(t.rate)||0)), out = paidOut(t.id);
-      return `<div class="row r-wage"><span class="name">${esc(t.name)}</span><span class="num c-les">${mine.length}</span><span class="num c-h">${hrs.toLocaleString("cs-CZ")} h</span><span class="num c-rate">${Number(t.rate) ? kc(t.rate) : "—"}</span>
+    [...S.teachers].sort(byName).filter(t => t.active !== false || held.some(x => x.teacherIds.includes(t.id)) || wh[t.id] || paidOut(t.id)).map(t => {
+      const mine = held.filter(x => x.teacherIds.includes(t.id)), fromWork = !!wh[t.id], hrs = fromWork ? wh[t.id] : mine.reduce((a,x) => a + x.hours, 0), sug = Math.round(hrs * (Number(t.rate)||0)), out = paidOut(t.id);
+      return `<div class="row r-wage"><span class="name">${esc(t.name)}</span><span class="num c-les">${mine.length}</span><span class="num c-h">${hrs.toLocaleString("cs-CZ")} h<div class="sub">${hrs ? (fromWork ? "z výkazu" : "z docházky") : ""}</div></span><span class="num c-rate">${Number(t.rate) ? kc(t.rate) : "—"}</span>
         <span class="money">${Number(t.rate) ? kc(sug) : `<span class="sub">doplň sazbu</span>`}</span><span class="money">${out ? kc(out) : "—"}</span>
         <span>${sug && !out ? `<button class="btn small" data-wage="${t.id}" data-amount="${sug}">Zapsat výplatu</button>` : out ? `<span class="pill good">zapsáno</span>` : ""}</span></div>`; }).join("") +
-    `</div><p class="hint">Návrh = odučené hodiny podle zapsané docházky × sazba učitele. Když lekci učí dvě lektorky, počítají se hodiny každé z nich. „Zapsat výplatu“ ho přidá mezi výdaje s datem, kdy výplatu zapisuješ, a tady se označí jako zapsaná.</p>`;
+    `</div><p class="hint">Návrh = odpracované hodiny × sazba učitele. Hodiny se berou z výkazu hodin; když lektorka v daném měsíci výkaz nemá, spočítají se ze zapsané docházky dětí. „Zapsat výplatu“ ho přidá mezi výdaje s datem, kdy výplatu zapisuješ, a tady se označí jako zapsaná.</p>`;
 }
 
 /* =========================================================
@@ -1042,7 +1070,7 @@ function readSheet(X, ws){
   let best = -1, bestScore = 0;
   rows.slice(0, 8).forEach((r, i) => { const H = r.map(norm); const sc = Object.keys(COLS).filter(k => colIndex(H, k) >= 0).length; if (sc > bestScore) { best = i; bestScore = sc; } });
   if (best < 0 || bestScore < 2) return null;
-  return { H: rows[best].map(norm), rows: rows.slice(best + 1).filter(r => r.some(c => str(c) !== "")), ws, c0: rng.s.c };
+  return { H: rows[best].map(norm), Hraw: rows[best].map(x => x == null ? "" : String(x).trim()), rows: rows.slice(best + 1).filter(r => r.some(c => str(c) !== "")), ws, c0: rng.s.c };
 }
 function sheetKind(name, H){
   const sn = norm(name), has = k => colIndex(H, k) >= 0;
@@ -1073,8 +1101,10 @@ function applyWorkbook(D, X, wb){
     return t && t.id; }).filter(Boolean);
   const findCourse = (id, name) => cById().get(str(id)) || cByName().get(norm(name));
   const kinds = [];
-  wb.SheetNames.forEach(sn => { const data = readSheet(X, wb.Sheets[sn]); if (!data) return; const k = sheetKind(sn, data.H); if (k) kinds.push({sn, ...k, ...data}); });
-  const order = ["teachers","courses","kids","payments","attendance","lessons","expenses"];
+  wb.SheetNames.forEach(sn => { const data = readSheet(X, wb.Sheets[sn]); if (!data) return; let k = sheetKind(sn, data.H);
+    if (!k && !/^(prehled|souhrn)/.test(norm(sn)) && colIndex(data.H, "date") >= 0 && colIndex(data.H, "name") < 0) k = {type:"work"};
+    if (k) kinds.push({sn, ...k, ...data}); });
+  const order = ["teachers","courses","work","kids","payments","attendance","lessons","expenses"];
   kinds.sort((a,b) => order.indexOf(a.type) - order.indexOf(b.type));
   kinds.forEach(k => {
     const ci = {}; Object.keys(COLS).forEach(key => { ci[key] = colIndex(k.H, key); });
@@ -1100,6 +1130,22 @@ function applyWorkbook(D, X, wb){
         if (str(g(r,"room"))) c.room = str(g(r,"room")); if (toBool(g(r,"active")) !== null) c.active = toBool(g(r,"active")); if (str(g(r,"note"))) c.note = str(g(r,"note"));
         if (before !== "null" && before !== JSON.stringify(c)) upd++; });
       lines.push([k.sn, "Kurzy", `${pl(add, "nový", "nové", "nových")}, ${pl(upd, "upravený", "upravené", "upravených")}`]); }
+    if (k.type === "work") { let n = 0; const months = new Set(), created = [];
+      const skip = new Set(["date","days","note"].map(key => ci[key]).filter(i => i >= 0));
+      const cols = [];
+      k.H.forEach((hh, i) => {
+        if (!hh || skip.has(i) || /^(celkem|soucet|suma|den|datum|poznamka|mesic)/.test(hh) || !k.rows.some(r => toNum(r[i]) > 0)) return;
+        let t = D.teachers.find(x => norm(x.name) === hh);
+        if (!t && !hh.includes(" ")) { let c = D.teachers.filter(x => norm(x.name).split(" ")[0] === hh); if (c.length > 1 && c.filter(x => x.active !== false).length === 1) c = c.filter(x => x.active !== false); if (c.length === 1) t = c[0]; else if (c.length > 1) { warn.push(`Sloupec „${k.Hraw[i]}“ v listu ${k.sn} odpovídá víc lektorkám, přeskočil jsem ho. Přejmenuj ho na celé jméno.`); return; } }
+        if (!t) { t = {id:uid(), name:k.Hraw[i], phone:"", email:"", rate:"", active:false, note:"Přidáno z výkazu hodin"}; D.teachers.push(t); created.push(t.name); }
+        cols.push([i, t.id]); });
+      k.rows.forEach(r => { const d = toDate(g(r,"date")); if (!d) return;
+        const w = D.work[d] || {hours:{}, note:""}, before = JSON.stringify(D.work[d] || null); w.hours = w.hours || {};
+        cols.forEach(([i, tid]) => { const v = toNum(r[i]); if (v > 0) w.hours[tid] = v; });
+        if (str(g(r,"note"))) w.note = str(g(r,"note"));
+        if (Object.keys(w.hours).length || w.note) { D.work[d] = w; if (before !== JSON.stringify(w)) { n++; months.add(d.slice(0,7)); } } });
+      if (created.length) warn.push(`Ve výkazu ${created.length > 1 ? "jsou nové lektorky" : "je nová lektorka"} ${created.map(x => `„${x}“`).join(", ")}. Přidal jsem ${created.length > 1 ? "je" : "ji"} mezi učitele jako neaktivní.`);
+      lines.push([k.sn, "Výkaz hodin", `${pl(n, "změněný den", "změněné dny", "změněných dnů")}${months.size ? " · " + [...months].sort().map(ym => ymLabel(ym).toLowerCase()).join(", ") : ""}`]); }
     if (k.type === "kids") { let add = 0, upd = 0; const unknownCourses = new Set();
       k.rows.forEach(r => { const name = str(g(r,"name")); if (!name) return;
         let s = findKid(g(r,"id") || g(r,"kidId"), name); const before = JSON.stringify(s || null);
@@ -1204,6 +1250,8 @@ async function exportExcel(){
     const vals = Object.values(ms); les.push([d, DAYS_SHORT[dowOf(d)-1], c.name, c.id, tNames(Array.isArray(r.teacherIds) ? r.teacherIds : cT(c)), r.note || "", vals.filter(v => v === "P").length, vals.filter(v => v === "N").length, vals.filter(v => v === "O").length]); }));
   add("Docházka", ["Datum","Kurz","ID kurzu","ID dítěte","Jméno","Stav"], att, [11,20,10,12,30,10]);
   add("Lekce", ["Datum","Den","Kurz","ID kurzu","Učitelé","Probíralo se","Přítomno","Chybí","Omluveno"], les, [11,5,20,10,32,44,9,7,9]);
+  const wds = Object.keys(S.work || {}).sort(), wts = [...S.teachers].sort(byName).filter(t => wds.some(d => ((S.work[d] || {}).hours || {})[t.id]));
+  add("Výkaz hodin", ["Datum","Den", ...wts.map(t => t.name), "Poznámka"], wds.map(d => [d, DAYS_SHORT[dowOf(d)-1], ...wts.map(t => ((S.work[d] || {}).hours || {})[t.id] || ""), (S.work[d] || {}).note || ""]), [11,5, ...wts.map(() => 12), 30]);
   add("Výdaje", ["ID","Datum","Kategorie","Učitel","Částka","Za měsíc","Poznámka"],
     [...S.expenses].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(e => [e.id, e.date || "", e.category || "", e.teacherId ? tName(e.teacherId) : "", Number(e.amount) || 0, e.forYm || "", e.note || ""]), [12,11,15,22,10,9,36]);
   X.writeFile(wb, `evidence-${todayStr}.xlsx`, {compression:true});
@@ -1432,7 +1480,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeDlg();
   const d = e.target.dataset || {};
   if (e.key === "Enter" && (d.kid || d.course || d.teacher || d.exp)) { e.preventDefault(); e.target.click(); }
-  if (e.key === "Enter" && d.pay && e.target.tagName === "INPUT") e.target.blur();
+  if (e.key === "Enter" && (d.pay || d.wk || d.wkn) && e.target.tagName === "INPUT") e.target.blur();
 });
 document.addEventListener("input", e => {
   const t = e.target;
@@ -1446,6 +1494,11 @@ document.addEventListener("change", e => {
   if (t.id === "date" && t.value) { U.date = t.value; U.extraCourse = ""; render(); }
   if (t.id === "extraCourse" && t.value) { U.extraCourse = t.value; render(); }
   if (t.dataset.pay) { const f = t.dataset.pay; setPay(t.dataset.s, f, f === "price" || f === "paid" ? (t.value === "" ? "" : Number(t.value)) : t.value); }
+  if (t.dataset.wk) { const d = t.dataset.wk, tid = t.dataset.t, v = t.value === "" ? null : Number(t.value);
+    commit(D => { const w = D.work[d] || (D.work[d] = {hours:{}, note:""}); w.hours = w.hours || {}; if (v) w.hours[tid] = v; else delete w.hours[tid];
+      if (!Object.keys(w.hours).length && !w.note) delete D.work[d]; }); return; }
+  if (t.dataset.wkn) { const d = t.dataset.wkn, v = t.value.trim();
+    commit(D => { const w = D.work[d] || (D.work[d] = {hours:{}, note:""}); w.note = v; if (!Object.keys(w.hours || {}).length && !w.note) delete D.work[d]; }); return; }
   if (t.dataset.note) { const cid = t.dataset.note, v = t.value.trim();
     commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), r = day[cid] || (day[cid] = {marks:{}, note:"", teacherIds:[...cT(course(cid))]}); r.note = v;
       if (!v && !Object.keys(r.marks||{}).length) delete day[cid]; if (!Object.keys(day).length) delete D.attendance[U.date]; }); toast("Zápis uložen."); }
