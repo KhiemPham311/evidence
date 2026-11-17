@@ -11,6 +11,17 @@
     "ct": "kE8Cfthy18yl4j+fadWIMifpd33zkeUrmo0h4O3y0B7B3nAv8fgxWs0sBCi6hVcg704nnuHKHt70kTy8McuGuxBtb9bi+f4KHNHQp3inRlL1x4gnYx0E8xS6BmDovRmxEpLJej3oTz4ck5Jdtilgi9sqUAjdsgIcwNzrvBeNWurW3GIzy3kaAT+vW0HQBHVVwFiZSxnar3HpLVl9Vc7Bv6zoQMPYMCILUZm93cju9K9MAxfYKfG705FwO0Oo0/KDv2MQFBN7xvMhXQ==",
     "iter": 600000
    }
+  },
+  {
+   "id": "7g5xpyec1u",
+   "name": "Tulinka",
+   "added": "2026-11-17",
+   "box": {
+    "salt": "LNMFtcYte3Nf5JsgtUoHOQ==",
+    "iv": "UtZ1y7O6H9rq9FST",
+    "ct": "SvfDc2Nu1fp8TKeuqsDqbqv65edYbTFyTxgs0jWJ+kkxJVYHy7IpC8CB77tfNPp/9b2xgAgMjwtWxm3VIq6DGZGfIWnTGC7WPlSRZAdkxbtQU+4hhTe3DPu71PsKqTrjZ6mnSw/QEsKjGp8x3bCHJITNwIa+i6mEWs3LJ3jxqIJBggcy8dxGA96RF2tTa0UcziUBbAIHhAQACmyLSF8fDPO6w0mWWuCrC7j0dad/Zp97A2GgB3qiXaFHY0LTEZ7MKvODVthTNbxRsA==",
+    "iter": 600000
+   }
   }
  ]
 }
