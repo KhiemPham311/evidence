@@ -125,10 +125,10 @@ h2 .sub{font-weight:400}
 .r-tea{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 6rem minmax(0,1.6fr) 7.5rem}
 .r-att{grid-template-columns:2rem minmax(0,1.6fr) auto}
 table.work td,table.work th{padding:4px 6px;vertical-align:middle}
-table.work th.r,table.work td.r{text-align:center}
+table.grid.work th.r,table.grid.work td.r{text-align:center}
 table.work td{text-align:center}
 table.work td:first-child,table.work td:nth-child(2),table.work td:last-child{text-align:left}
-table.work input{width:4.4rem;min-height:32px;padding:3px 6px;text-align:right;font-variant-numeric:tabular-nums}
+table.work input{width:4.4rem;min-height:32px;padding:3px 6px;text-align:center;font-variant-numeric:tabular-nums}
 table.work input.wn{width:100%;min-width:9rem;text-align:left}
 table.work tr.we td{background:var(--bg)}
 table.work tr.today td{background:var(--cream)}
@@ -645,7 +645,7 @@ const VIEWS = {
       <div class="tile r"><b>${nAbs}</b><span>neomluvených absencí · ${oAbs} omluvených</span></div></div>`;
     const todo = [];
     if (debtors.length) todo.push(`<div class="row r-three"><span class="name">Nezaplaceno za ${ymLabel(U.ym).toLowerCase()}</span><span class="sub c-mid">${pl(debtors.length, "dítě", "děti", "dětí")}, chybí ${kc(debtors.reduce((a,s) => a + priceOf(s,U.ym) - paidOf(s,U.ym), 0))}</span><a class="btn small" href="#platby">Otevřít platby</a></div>`);
-    if (miss.length) todo.push(`<div class="row r-three"><span class="name">Nezapsaná docházka</span><span class="sub c-mid">${miss.slice(0,4).map(m => `${dateLabel(m.date)} ${esc(m.course.name)}`).join(", ")}${miss.length > 4 ? ` a dalších ${miss.length-4}` : ""}</span><button class="btn small" data-goto-date="${miss[0].date}">Zapsat</button></div>`);
+    if (miss.length) todo.push(`<div class="row r-three"><span class="name">Lekce bez docházky dětí</span><span class="sub c-mid">${miss.slice(0,4).map(m => `${dateLabel(m.date)} ${esc(m.course.name)}`).join(", ")}${miss.length > 4 ? ` a dalších ${miss.length-4}` : ""}</span><button class="btn small" data-goto-date="${miss[0].date}">Zapsat</button></div>`);
     if (full.length) todo.push(`<div class="row r-three"><span class="name">Plné kurzy</span><span class="sub c-mid">${full.map(c => esc(c.name)).join(", ")}</span><a class="btn small" href="#kurzy">Kurzy</a></div>`);
     if (noCourse.length) todo.push(`<div class="row r-three"><span class="name">Děti bez kurzu</span><span class="sub c-mid">${noCourse.slice(0,5).map(s => esc(s.name)).join(", ")}${noCourse.length > 5 ? ` a dalších ${noCourse.length-5}` : ""}</span><button class="btn small" data-filter-nocourse="1">Zobrazit</button></div>`);
     const noTeacher = cs.filter(c => !cT(c).length);
@@ -757,10 +757,11 @@ const VIEWS = {
           <span class="sub c-tel">${esc(t.phone || "")}${t.phone && t.email ? "<br>" : ""}${esc(t.email || "")}</span>
           <span class="num c-rate">${Number(t.rate) ? kc(t.rate) + "/h" : "—"}</span>
           <span class="sub c-crs">${cs.map(c => `${esc(c.name)} (${esc(daysText(c))})`).join(", ") || "žádný kurz"}</span>
-          <span>${wkh[t.id] ? `${wkh[t.id].toLocaleString("cs-CZ")} h` : pl(mine.length, "lekce", "lekce", "lekcí")}${m.length ? `<br><span class="pill warn">${m.length} nezapsáno</span>` : ""}</span></div>`; }).join("") + `</div>`;
+          <span>${wkh[t.id] ? `${wkh[t.id].toLocaleString("cs-CZ")} h` : pl(mine.length, "lekce", "lekce", "lekcí")}${m.length ? `<br><span class="pill warn" title="Lekce podle rozvrhu, u kterých chybí zapsaná docházka dětí">${m.length}× bez docházky</span>` : ""}</span></div>`; }).join("") + `</div>`;
     h += `<h2>Výkaz hodin za ${ymLabel(U.ym).toLowerCase()}</h2>` + workGrid(U.ym);
     h += `<h2>Výplaty za ${ymLabel(U.ym).toLowerCase()}</h2>` + wageTable(U.ym);
-    if (miss.length) h += `<h2>Nezapsaná docházka</h2><div class="sheet">${miss.map(m => `<div class="row r-three"><span class="name">${dateLabel(m.date)} ${DAYS_SHORT[dowOf(m.date)-1]}</span><span class="sub c-mid">${esc(m.course.name)} · ${esc(tNames(cT(m.course)))}</span><button class="btn small" data-goto-date="${m.date}">Zapsat</button></div>`).join("")}</div>`;
+    if (miss.length) h += `<h2>Lekce bez zapsané docházky dětí</h2><p class="hint">Podle rozvrhu tyhle lekce proběhly, ale v záložce Docházka u nich není zapsané, které děti přišly. Hodiny lektorky to neovlivní, ty se berou z výkazu. Jde jen o přehled absencí dětí.</p>`;
+    if (miss.length) h += `<div class="sheet">${miss.map(m => `<div class="row r-three"><span class="name">${dateLabel(m.date)} ${DAYS_SHORT[dowOf(m.date)-1]}</span><span class="sub c-mid">${esc(m.course.name)} · ${esc(tNames(cT(m.course)))}</span><button class="btn small" data-goto-date="${m.date}">Zapsat</button></div>`).join("")}</div>`;
     return h;
   },
   nastaveni(){
