@@ -114,6 +114,13 @@ h2 .sub{font-weight:400}
 .r-kids{grid-template-columns:2rem minmax(0,2fr) minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) 6rem}
 .r-pay{grid-template-columns:minmax(0,1.8fr) 6rem 6rem 7.5rem 9rem 7rem 7.5rem}
 .r-exp{grid-template-columns:5.5rem minmax(0,1fr) minmax(0,1.6fr) 7rem}
+.cats{display:grid;gap:2px;padding:6px 0}
+.cat{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) 6.5rem;gap:10px;align-items:center;padding:7px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px}
+.cat:hover,.cat[aria-pressed="true"]{background:var(--soft,rgba(0,0,0,.05))}
+.cat .track{height:10px;border-radius:5px;background:rgba(0,0,0,.06);overflow:hidden}
+.cat .track i{display:block;height:100%;background:var(--brand);border-radius:5px}
+.cat b{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.exp-total{display:flex;justify-content:space-between;padding:10px 14px;font-weight:700;border-top:1px solid var(--line,rgba(0,0,0,.1))}
 .r-wage{grid-template-columns:minmax(0,1.3fr) 5rem 5rem 6rem 7rem 7rem 8.5rem}
 .r-tea{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 6rem minmax(0,1.6fr) 7.5rem}
 .r-att{grid-template-columns:2rem minmax(0,1.6fr) auto}
@@ -211,6 +218,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand-ink);flex:n
   .r-pay{grid-template-columns:1fr 1fr} .r-pay .name{grid-column:1/-1} .r-pay .c-meth,.r-pay .c-date{display:none}
   .r-pay label.mini{display:grid;gap:2px;font-size:.72rem;color:var(--muted)}
   .r-exp{grid-template-columns:4.5rem 1fr auto} .r-exp .c-note{grid-column:2/3}
+  .cat{grid-template-columns:minmax(0,7.5rem) minmax(0,1fr) auto;padding:7px 10px}
   .r-wage{grid-template-columns:1fr auto} .r-wage .c-h,.r-wage .c-rate,.r-wage .c-les{display:none}
   .r-tea{grid-template-columns:1fr auto} .r-tea .c-tel,.r-tea .c-rate,.r-tea .c-crs{display:none}
   .r-att{grid-template-columns:1.6rem 1fr} .r-att .seg{grid-column:2/-1}
@@ -253,7 +261,8 @@ const STORE_KEY = "sea-l-evidence-v1", GH_KEY = "sea-l-evidence-github";
 const DAYS = ["Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota","Neděle"];
 const DAYS_SHORT = ["Po","Út","St","Čt","Pá","So","Ne"];
 const MONTHS = ["Leden","Únor","Březen","Duben","Květen","Červen","Červenec","Srpen","Září","Říjen","Listopad","Prosinec"];
-const EXP_CATS = ["Lektor","Nájem","Energie a účty","Jídlo a pití","Pomůcky","Jiné"];
+const EXP_CATS = ["Lektor","Nájem","Energie a účty","Vybavení a dekorace","Pomůcky","Jídlo a pití","Akce a výlety","Reklama","Jiné"];
+const expCats = () => [...new Set([...EXP_CATS, ...S.expenses.map(e => e.category).filter(Boolean)])];
 const METHODS = {"":"—", hotove:"Hotově", prevod:"Převodem"};
 const $ = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
@@ -276,7 +285,7 @@ const mins = t => { const [h,m] = String(t||"").split(":").map(Number); return (
 const hoursOf = c => Math.max(0, (mins(c.end) - mins(c.start)) / 60);
 const num = v => v === "" || v === null || v === undefined ? null : Number(v);
 
-const U = { view:"prehled", ym:todayYm, date:todayStr, q:"", group:"", status:"aktivni", course:"", payFilter:"", payQ:"", extraCourse:"" };
+const U = { view:"prehled", ym:todayYm, date:todayStr, q:"", group:"", status:"aktivni", course:"", payFilter:"", payQ:"", extraCourse:"", expScope:"m", expCat:"" };
 let S = null;
 
 /* =========================================================
@@ -725,13 +734,7 @@ const VIEWS = {
       : `<div class="sheet"><div class="empty">V tomto měsíci tu nikdo není.</div></div>`;
     h += `<p class="hint">Cena se předvyplní podle kurzů dítěte. Úprava ceny platí jen pro tento měsíc. Neaktivní děti zůstávají v měsících, kde mají platbu nebo docházku.</p>`;
     h += `<h2>Výplaty učitelů</h2>` + wageTable(ym);
-    const outs = [...f.expenses].sort((a,b) => String(a.date).localeCompare(String(b.date)));
-    h += `<h2>Výdaje <span class="sub">${kc(f.spent)}</span></h2><div class="sheet">${outs.length ? outs.map(e => `<div class="row click r-exp" data-exp="${e.id}" tabindex="0" role="button">
-        <span class="num">${e.date ? dateLabel(e.date) : "—"}</span><span><span class="pill tag">${esc(e.category || "Jiné")}</span></span>
-        <span class="sub c-note">${esc([e.teacherId ? tName(e.teacherId) : "", e.note].filter(Boolean).join(" · "))}</span><span class="money name">${kc(e.amount)}</span></div>`).join("")
-      : `<div class="empty">V tomto měsíci zatím nejsou žádné výdaje.</div>`}</div>`;
-    const cats = {}; outs.forEach(e => { cats[e.category || "Jiné"] = (cats[e.category || "Jiné"]||0) + (Number(e.amount)||0); });
-    if (outs.length) h += `<p class="hint">${Object.entries(cats).sort((a,b) => b[1]-a[1]).map(([c,v]) => `${esc(c)} ${kc(v)}`).join(" · ")}</p>`;
+    h += expenseSection(f);
     h += `<h2>Za posledních 12 měsíců</h2>` + barChart([...Array(12)].map((_,i) => shiftYm(U.ym, i-11)));
     const yr = [...Array(12)].map((_,i) => shiftYm(U.ym, i-11)).map(m => ({m, ...monthFin(m)})).filter(x => x.received || x.spent || x.expected);
     if (yr.length) h += `<div class="sheet scroll" style="margin-top:10px"><table class="grid"><thead><tr><th>Měsíc</th><th class="r">Očekáváno</th><th class="r">Vybráno</th><th class="r">Výdaje</th><th class="r">Zisk</th></tr></thead><tbody>${yr.map(x => `<tr><td>${ymLabel(x.m)}</td><td class="r">${kc(x.expected)}</td><td class="r">${kc(x.received)}</td><td class="r">${kc(x.spent)}</td><td class="r" style="color:${x.profit >= 0 ? "var(--good)" : "var(--bad)"};font-weight:700">${kc(x.profit)}</td></tr>`).join("")}
@@ -970,23 +973,46 @@ function teacherDlg(id){
   if (id) armDelete($("#t_del"), $("#t_err"), "Kurzy tohoto učitele zůstanou bez učitele. Radši nastav stav Neučí.", () => commit(D => {
     D.teachers = D.teachers.filter(x => x.id !== id); D.courses.forEach(c => { c.teacherIds = cT(c).filter(x => x !== id); }); }));
 }
+function expenseSection(f){
+  const ym = U.ym, sc = U.expScope;
+  const inScope = e => { const m = String(e.date||"").slice(0,7); if (sc === "m") return m === ym; if (sc === "y") return m > shiftYm(ym,-12) && m <= ym; return true; };
+  const all = S.expenses.filter(inScope), total = all.reduce((a,e) => a + (Number(e.amount)||0), 0);
+  const cats = {}; all.forEach(e => { const c = e.category || "Jiné"; cats[c] = (cats[c]||0) + (Number(e.amount)||0); });
+  const ranked = Object.entries(cats).sort((a,b) => b[1]-a[1]), max = ranked.length ? ranked[0][1] : 1;
+  if (U.expCat && !cats[U.expCat]) U.expCat = "";
+  const outs = all.filter(e => !U.expCat || (e.category || "Jiné") === U.expCat).sort((a,b) => String(b.date).localeCompare(String(a.date)));
+  const sum = outs.reduce((a,e) => a + (Number(e.amount)||0), 0);
+  const scopeTxt = {m: ymLabel(ym).toLowerCase(), y:"posledních 12 měsíců", a:"celou dobu"}[sc];
+  const dl = ds => sc === "m" ? dateLabel(ds) : `${dateLabel(ds)} ${ds.slice(2,4)}`;
+  let h = `<h2>Výdaje <span class="sub">${kc(total)} za ${scopeTxt}</span></h2>
+    <div class="bar"><div class="chips" id="fExpScope">${[["m","Tento měsíc"],["y","12 měsíců"],["a","Vše"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${sc===v}">${l}</button>`).join("")}</div><span class="grow"></span><button class="btn primary" id="addBill">+ Přidat účet nebo nákup</button></div>`;
+  if (!all.length) return h + `<div class="sheet"><div class="empty">Za ${scopeTxt} zatím nejsou žádné výdaje. Účty a nákupy (třeba dekorace, pomůcky, nájem) přidáš tlačítkem „Přidat účet nebo nákup“.</div></div>`;
+  h += `<div class="sheet"><div class="cats" id="fExpCat">${ranked.map(([c,v]) => `<button class="cat" data-v="${esc(c)}" aria-pressed="${U.expCat===c}" title="Ukázat jen ${esc(c)}"><span class="name">${esc(c)}</span><span class="track"><i style="width:${Math.max(2, Math.round(v/max*100))}%"></i></span><b>${kc(v)}</b></button>`).join("")}</div></div>`;
+  h += `<p class="hint">${U.expCat ? `Zobrazeno jen: <b>${esc(U.expCat)}</b>. <button class="btn small" id="expCatAll">Ukázat všechny kategorie</button>` : "Klikni na kategorii a uvidíš jen její výdaje."}</p>`;
+  h += `<div class="sheet">${outs.map(e => `<div class="row click r-exp" data-exp="${e.id}" tabindex="0" role="button">
+        <span class="num">${e.date ? dl(e.date) : "—"}</span><span><span class="pill tag">${esc(e.category || "Jiné")}</span></span>
+        <span class="sub c-note">${esc([e.teacherId ? tName(e.teacherId) : "", e.note].filter(Boolean).join(" · "))}</span><span class="money name">${kc(e.amount)}</span></div>`).join("")}
+      <div class="exp-total"><span>Celkem${U.expCat ? ` · ${esc(U.expCat)}` : ""} (${pl(outs.length, "položka", "položky", "položek")})</span><span>${kc(sum)}</span></div></div>`;
+  return h;
+}
 function expenseDlg(id, preset){
-  const e = id ? S.expenses.find(x => x.id === id) : Object.assign({date: U.ym === todayYm ? todayStr : `${U.ym}-01`, category:"Lektor", teacherId:"", amount:"", note:""}, preset || {});
+  const e = id ? S.expenses.find(x => x.id === id) : Object.assign({date: U.ym === todayYm ? todayStr : `${U.ym}-01`, category:"", teacherId:"", amount:"", note:""}, preset || {});
   if (!e) return;
   openDlg(`<h3 id="dlgTitle">${id ? "Upravit výdaj" : "Přidat výdaj"}</h3><form class="form" id="f" novalidate>
     <label>Datum<input type="date" id="e_date" value="${esc(e.date||"")}"></label>
     <label>Částka (Kč)<input type="number" id="e_amount" min="0" step="1" inputmode="numeric" value="${esc(e.amount ?? "")}"></label>
-    <label>Kategorie<select id="e_cat">${EXP_CATS.map(c => `<option${c===e.category?" selected":""}>${c}</option>`).join("")}</select></label>
+    <label>Kategorie<input type="text" id="e_cat" list="e_cats" value="${esc(e.category||"")}" placeholder="Vyber nebo napiš vlastní" autocomplete="off"><datalist id="e_cats">${expCats().map(c => `<option value="${esc(c)}">`).join("")}</datalist></label>
     <label id="e_tl">Učitel<select id="e_teacher">${teacherOptions(e.teacherId, "—")}</select></label>
-    <label class="full">Poznámka<input type="text" id="e_note" value="${esc(e.note||"")}" autocomplete="off"></label>
+    <label class="full">Co to bylo<input type="text" id="e_note" value="${esc(e.note||"")}" placeholder="např. Dekorace do třídy – IKEA" autocomplete="off"></label>
   </form><p class="err" id="e_err"></p>
   <div class="actions">${id ? `<button class="btn danger left" id="e_del">Smazat</button>` : ""}<button class="btn" id="e_cancel">Zrušit</button><button class="btn primary" id="e_save">Uložit</button></div>`, "#e_amount");
-  const tv = () => { $("#e_tl").style.display = $("#e_cat").value === "Lektor" ? "" : "none"; }; $("#e_cat").onchange = tv; tv();
+  const tv = () => { $("#e_tl").style.display = $("#e_cat").value === "Lektor" ? "" : "none"; }; $("#e_cat").oninput = tv; tv();
   $("#e_cancel").onclick = closeDlg;
   const save = () => {
     const amount = Number($("#e_amount").value); if (!$("#e_date").value) { $("#e_err").textContent = "Vyplň datum."; return; }
     if (!(amount > 0)) { $("#e_err").textContent = "Vyplň částku."; return; }
-    const data = { date:$("#e_date").value, amount, category:$("#e_cat").value, teacherId: $("#e_cat").value === "Lektor" ? $("#e_teacher").value : "", note:$("#e_note").value.trim(), forYm: $("#e_cat").value === "Lektor" ? (e.forYm || "") : "" };
+    const cat = $("#e_cat").value.trim().replace(/\s+/g, " "); if (!cat) { $("#e_err").textContent = "Vyber nebo napiš kategorii."; return; }
+    const data = { date:$("#e_date").value, amount, category:cat, teacherId: cat === "Lektor" ? $("#e_teacher").value : "", note:$("#e_note").value.trim(), forYm: cat === "Lektor" ? (e.forYm || "") : "" };
     commit(D => { if (id) Object.assign(D.expenses.find(x => x.id === id), data); else D.expenses.push({id:uid(), ...data}); });
     closeDlg(); toast("Výdaj uložen.");
   };
@@ -1444,6 +1470,10 @@ document.addEventListener("click", e => {
   if (t.dataset.filterNocourse) { U.course = "__none"; U.status = "aktivni"; location.hash = "#deti"; return; }
   if (t.closest("#fStatus")) { U.status = t.dataset.v; return renderAll(); }
   if (t.closest("#fPay")) { U.payFilter = t.dataset.v; return render(); }
+  if (t.closest("#fExpScope") && t.dataset.v) { U.expScope = t.dataset.v; U.expCat = ""; return render(); }
+  { const c = t.closest("#fExpCat .cat"); if (c) { U.expCat = U.expCat === c.dataset.v ? "" : c.dataset.v; return render(); } }
+  if (t.id === "expCatAll") { U.expCat = ""; return render(); }
+  if (t.id === "addBill") return expenseDlg(null);
   if (t.dataset.mark) { const cur = ((S.attendance[U.date]||{})[t.dataset.c]?.marks||{})[t.dataset.s]; return setMark(t.dataset.c, t.dataset.s, cur === t.dataset.mark ? "" : t.dataset.mark); }
   if (t.dataset.allp) { const c = course(t.dataset.allp), r = (S.attendance[U.date]||{})[c.id] || {};
     return commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), rec = day[c.id] || (day[c.id] = {marks:{}, note:"", teacherIds:[...cT(c)]});
