@@ -55,9 +55,24 @@ Na dalším zařízení (třeba na mobilu) otevři stejnou adresu, v Nastavení 
 - Když ztratíš telefon nebo počítač, smaž token na GitHubu (Developer settings → Fine-grained tokens → Delete) a vytvoř nový.
 - Když token vyprší, appka ukáže chybu. Vytvoř nový a v Nastavení se znovu připoj.
 
-## Pozor na dvě zařízení najednou
+## Přístup pro další lidi (ředitel, zástupce)
 
-Appka je dělaná pro jednoho člověka. Když upravíš data na dvou zařízeních hned po sobě, appka pozná, že je na GitHubu jiná verze, a zeptá se, která platí. Před prací na jiném zařízení počkej, až se v hlavičce ukáže „Uloženo na GitHubu“.
+Data vidí jen ten, kdo má token k soukromému repozitáři s daty. Adresa appky je veřejná, ale bez tokenu je appka prázdná.
+
+1. Pro každého člověka vytvoř **vlastní token** stejně jako v kroku 4 výše (jen repozitář s daty, Contents: Read and write) a pojmenuj ho jeho jménem, třeba `evidence – ředitel`. GitHub účet ten člověk mít nemusí.
+2. Pošli mu adresu appky a token. Token posílej odděleně a bezpečně, nejlépe osobně nebo přes správce hesel, ne veřejným chatem.
+3. On si v appce v Nastavení vyplní uživatele, repozitář, **svoje jméno** a token a dá Připojit.
+4. Když s vámi přestane spolupracovat nebo ztratí telefon, smaž na GitHubu jen jeho token. Ostatní to neovlivní.
+
+Kdo má token, vidí a může měnit všechno, včetně financí.
+
+### Když pracuje víc lidí najednou
+
+- Appka každou minutu a při každém návratu do okna načte změny ostatních a spojí je s tvými.
+- Když dva lidé změní různé věci (třeba jeden platbu, druhý docházku), uloží se obojí.
+- Když dva lidé ve stejnou chvíli změní **stejnou** věc (třeba telefon stejného dítěte), platí ta, která se uložila později.
+- Jméno vyplněné v Nastavení se ukládá do historie změn. Kdo co kdy změnil, najdeš na GitHubu v repozitáři s daty pod **Commits**. Odtud jde i vrátit starší verzi.
+- Úpravy bez internetu zůstanou v prohlížeči a po připojení se spojí se změnami ostatních.
 
 ## Aktualizace appky
 

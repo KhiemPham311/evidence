@@ -385,67 +385,118 @@ function absences(ym){
 /* =========================================================
    GitHub synchronizace (soukromý repozitář s data.json)
    ========================================================= */
+const clone = x => x === undefined ? undefined : JSON.parse(JSON.stringify(x));
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const isObj = x => !!x && typeof x === "object" && !Array.isArray(x);
+const isRecArr = a => Array.isArray(a) && a.every(x => isObj(x) && typeof x.id === "string");
+/* Tříbodové sloučení: base = poslední společná verze, l = moje změny, r = změny ostatních.
+   Co změnil jen jeden, platí. Když dva změní totéž pole, vyhraje to, co se ukládá právě teď. */
+function merge3(b, l, r){
+  if (same(l, b)) return clone(r);
+  if (same(r, b) || same(l, r)) return clone(l);
+  if (isObj(l) && isObj(r)) {
+    const bo = isObj(b) ? b : {}, out = {};
+    new Set([...Object.keys(bo), ...Object.keys(l), ...Object.keys(r)]).forEach(k => { const v = merge3(bo[k], l[k], r[k]); if (v !== undefined) out[k] = v; });
+    return out;
+  }
+  if (isRecArr(l) && isRecArr(r)) {
+    const m = a => new Map((isRecArr(a) ? a : []).map(x => [x.id, x])), bm = m(b), lm = m(l), rm = m(r), out = [];
+    [...new Set([...r.map(x => x.id), ...l.map(x => x.id)])].forEach(id => { const v = merge3(bm.get(id), lm.get(id), rm.get(id)); if (v !== undefined) out.push(v); });
+    return out;
+  }
+  return clone(l);
+}
+const GH_BASE_KEY = "sea-l-evidence-github-base";
+async function ghFetch(url, opts){ try { return await fetch(url, opts); } catch(e){ throw new Error("Nejde se spojit s GitHubem. Zkontroluj připojení k internetu."); } }
 const GH = {
-  cfg:null, sha:null, timer:null, busy:false, again:false, state:"off", msg:"",
-  load(){ try { this.cfg = JSON.parse(localStorage.getItem(GH_KEY) || "null"); } catch(e){ this.cfg = null; } this.state = this.cfg ? "idle" : "off"; },
-  saveCfg(){ try { if (this.cfg) localStorage.setItem(GH_KEY, JSON.stringify(this.cfg)); else localStorage.removeItem(GH_KEY); } catch(e){} },
+  cfg:null, sha:null, base:null, timer:null, busy:false, again:false, state:"off", msg:"",
+  load(){
+    try { this.cfg = JSON.parse(localStorage.getItem(GH_KEY) || "null"); } catch(e){ this.cfg = null; }
+    try { const b = JSON.parse(localStorage.getItem(GH_BASE_KEY) || "null"); if (b && this.cfg) { this.base = normalize(b.data); this.sha = b.sha || null; } } catch(e){}
+    this.state = this.cfg ? "idle" : "off";
+  },
+  saveCfg(){ try { if (this.cfg) localStorage.setItem(GH_KEY, JSON.stringify(this.cfg)); else { localStorage.removeItem(GH_KEY); localStorage.removeItem(GH_BASE_KEY); } } catch(e){} },
+  saveBase(){ try { if (this.cfg && this.base) localStorage.setItem(GH_BASE_KEY, JSON.stringify({sha:this.sha, data:this.base})); } catch(e){} },
   url(extra=""){ const c = this.cfg; return `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}${extra}`; },
+  historyUrl(){ const c = this.cfg; return `https://github.com/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/commits/${encodeURIComponent(c.branch)}`; },
   fileUrl(){ return this.url("/contents/" + this.cfg.path.split("/").map(encodeURIComponent).join("/")); },
   headers(){ return { "Authorization": "Bearer " + this.cfg.token, "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }; },
   enc(str){ const b = new TextEncoder().encode(str); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); },
   dec(b64){ const bin = atob(b64.replace(/\s/g,"")); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); },
   set(state, msg){ this.state = state; this.msg = msg || ""; paintSync(); },
   async get(){
-    const r = await fetch(this.fileUrl() + "?ref=" + encodeURIComponent(this.cfg.branch), {headers:this.headers(), cache:"no-store"});
-    if (r.status === 404) return null;
+    const r = await ghFetch(this.fileUrl() + "?ref=" + encodeURIComponent(this.cfg.branch) + "&t=" + Date.now(), {headers:this.headers(), cache:"no-store"});
+    if (r.status === 404) { this.sha = null; return null; }
     if (!r.ok) throw await this.error(r);
     const j = await r.json();
     if (!j.content && j.size > 0) throw new Error("Soubor s daty je větší než 1 MB, GitHub ho touto cestou nevydá.");
     this.sha = j.sha; return normalize(JSON.parse(this.dec(j.content || "") || "{}"));
   },
   async put(){
-    const body = { message:`Evidence: změny ${new Date().toLocaleString("cs-CZ")}`, content:this.enc(JSON.stringify(S, null, 1)), branch:this.cfg.branch };
+    const who = (this.cfg.name || "").trim();
+    const body = { message:`Evidence: změny${who ? " · " + who : ""} · ${new Date().toLocaleString("cs-CZ")}`, content:this.enc(JSON.stringify(S, null, 1)), branch:this.cfg.branch };
     if (this.sha) body.sha = this.sha;
-    const r = await fetch(this.fileUrl(), {method:"PUT", headers:{...this.headers(), "Content-Type":"application/json"}, body:JSON.stringify(body)});
+    const r = await ghFetch(this.fileUrl(), {method:"PUT", headers:{...this.headers(), "Content-Type":"application/json"}, body:JSON.stringify(body)});
     if (r.status === 409 || r.status === 422) { const e = new Error("conflict"); e.conflict = true; throw e; }
     if (!r.ok) throw await this.error(r);
-    const j = await r.json(); this.sha = j.content && j.content.sha;
+    const j = await r.json(); this.sha = j.content && j.content.sha; this.base = clone(S); this.saveBase();
   },
   async error(r){
     let t = ""; try { t = (await r.json()).message || ""; } catch(e){}
     if (r.status === 401) return new Error("GitHub odmítl token. Zkontroluj, že je správně zkopírovaný a nevypršel.");
-    if (r.status === 403) return new Error("Token nemá právo zapisovat. Dej mu oprávnění Contents: Read and write.");
+    if (r.status === 403) return new Error(/rate limit/i.test(t) ? "GitHub teď dočasně omezil počet požadavků. Zkus to za pár minut." : "Token nemá právo zapisovat. Dej mu oprávnění Contents: Read and write.");
     if (r.status === 404) return new Error("Repozitář nebyl nalezen, nebo k němu token nemá přístup.");
     return new Error(`GitHub vrátil chybu ${r.status}${t ? ": " + t : ""}.`);
   },
-  schedule(){ if (!this.cfg) return; clearTimeout(this.timer); this.set("pending", "Čeká na uložení…"); this.timer = setTimeout(() => this.push(), 2500); },
+  merged(remote){ return normalize(merge3(this.base || {}, S, remote)); },
+  stamp(){ return new Date().toLocaleTimeString("cs-CZ", {hour:"2-digit", minute:"2-digit"}); },
+  schedule(){ if (!this.cfg) return; clearTimeout(this.timer); this.set("pending", "Čeká na uložení…"); this.timer = setTimeout(() => this.push(), 2000); },
   async push(){
     if (!this.cfg) return;
     if (this.busy) { this.again = true; return; }
     this.busy = true; clearTimeout(this.timer); this.set("busy", "Ukládám na GitHub…");
-    try { await this.put(); this.set("ok", "Uloženo na GitHubu " + new Date().toLocaleTimeString("cs-CZ", {hour:"2-digit", minute:"2-digit"})); }
-    catch(e){ if (e.conflict) this.set("conflict", "Na GitHubu je jiná verze dat"); else this.set("err", e.message || "Uložení na GitHub se nepovedlo."); }
+    try {
+      for (let attempt = 0; ; attempt++) {
+        try { await this.put(); break; }
+        catch(e){
+          if (!e.conflict || attempt >= 3) throw e.conflict ? new Error("Změny se nepodařilo spojit se změnami ostatních. Zkus to za chvíli znovu.") : e;
+          const remote = await this.get();
+          if (remote) { S = this.merged(remote); this.base = clone(remote); saveLocal(); this.saveBase(); renderKeepFocus(); }
+        }
+      }
+      this.set("ok", "Uloženo na GitHubu " + this.stamp());
+    }
+    catch(e){ this.set("err", e.message || "Uložení na GitHub se nepovedlo."); }
     finally { this.busy = false; if (this.again) { this.again = false; this.push(); } }
   },
-  async pull(silentIfSame){
-    this.set("busy", "Načítám z GitHubu…");
-    const remote = await this.get();
-    if (!remote) { this.sha = null; await this.put(); this.set("ok", "Data jsou nově uložená na GitHubu"); return "created"; }
-    if (!S || !S.updatedAt || (remote.updatedAt || "") >= S.updatedAt) { S = remote; saveLocal(); this.set("ok", "Načteno z GitHubu"); return "remote"; }
-    await this.put(); this.set("ok", "Novější data z prohlížeče uložena na GitHub"); return "local";
-  },
-  async resolve(useRemote){
-    try { this.set("busy", "Načítám z GitHubu…"); const remote = await this.get();
-      if (useRemote && remote) { S = remote; saveLocal(); this.set("ok", "Načtena verze z GitHubu"); }
-      else { await this.put(); this.set("ok", "Na GitHubu je teď tvoje verze"); }
-      renderAll(); } catch(e){ this.set("err", e.message); }
+  /* Načte změny ostatních a spojí je s mými. */
+  async refresh(quiet){
+    if (!this.cfg || this.busy) return;
+    this.busy = true; if (!quiet) this.set("busy", "Načítám z GitHubu…");
+    let needPush = false;
+    try {
+      const remote = await this.get();
+      if (!remote) { needPush = true; }
+      else if (!this.base) { S = remote; this.base = clone(remote); }
+      else if (!same(remote, this.base)) {
+        const mine = !same(S, this.base);
+        S = mine ? this.merged(remote) : remote; this.base = clone(remote);
+        needPush = mine && !same(S, remote);
+        saveLocal(); this.saveBase(); renderKeepFocus(); paintNotice();
+      } else needPush = !same(S, this.base);
+      saveLocal(); this.saveBase();
+      if (!needPush) this.set("ok", "Aktuální z GitHubu " + this.stamp());
+    } catch(e){ this.set("err", e.message || "GitHub teď není dostupný."); }
+    finally { this.busy = false; }
+    if (needPush) await this.push();
   }
 };
 function paintSync(){
   const b = $("#syncBadge"), t = $("#syncText"), st = GH.state;
-  b.className = "sync " + ({ok:"ok", busy:"busy", pending:"busy", err:"err", conflict:"err"}[st] || "");
+  b.className = "sync " + ({ok:"ok", busy:"busy", pending:"busy", err:"err"}[st] || "");
   t.textContent = st === "off" ? "Uloženo jen v prohlížeči" : (GH.msg || "Připojeno ke GitHubu");
-  if (st === "conflict" || st === "err") paintNotice();
+  const pill = $("#ghPill"); if (pill) { pill.className = "pill " + (st === "ok" ? "good" : st === "err" ? "bad" : "warn"); pill.textContent = GH.msg || "Připojeno"; }
+  if (st === "err" || st === "ok") paintNotice();
 }
 
 /* =========================================================
@@ -692,13 +743,16 @@ const VIEWS = {
     return `<div class="settings">
       <section class="panel"><h3>Ukládání na GitHub</h3>
         <p>Data se ukládají do souboru data.json v tvém soukromém repozitáři. Každá změna je commit, takže máš celou historii a zálohu. Token zůstává jen v tomto prohlížeči.</p>
-        ${connected ? `<p><span class="pill ${GH.state === "ok" ? "good" : GH.state === "err" || GH.state === "conflict" ? "bad" : "warn"}">${esc(GH.msg || "Připojeno")}</span> ${esc(c.owner)}/${esc(c.repo)} · ${esc(c.path)}</p>
-          <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="ghpush">Uložit teď</button><button class="btn" data-act="ghpull">Načíst z GitHubu</button><button class="btn danger" data-act="ghoff">Odpojit</button></div>`
+        ${connected ? `<p><span id="ghPill" class="pill ${GH.state === "ok" ? "good" : GH.state === "err" ? "bad" : "warn"}">${esc(GH.msg || "Připojeno")}</span> ${esc(c.owner)}/${esc(c.repo)} · ${esc(c.path)}</p>
+          <div class="bar" style="margin:0 0 12px"><div class="grow"><input type="text" id="gh_me" value="${esc(c.name || "")}" placeholder="Tvoje jméno, třeba Khiem nebo ředitel" aria-label="Tvoje jméno do historie změn" autocomplete="off"></div><button class="btn" data-act="ghname">Uložit jméno</button></div>
+          <p>Appka každou minutu načte změny ostatních a spojí je s tvými. Když dva lidé změní stejnou věc zároveň, platí ta pozdější. Kdo co kdy změnil, uvidíš v <a href="${esc(GH.historyUrl())}" target="_blank" rel="noopener">historii na GitHubu</a>.</p>
+          <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="ghpush">Uložit teď</button><button class="btn" data-act="ghpull">Načíst změny</button><button class="btn danger" data-act="ghoff">Odpojit</button></div>`
         : `<form class="form" id="ghForm" novalidate>
           <label>Uživatel nebo organizace na GitHubu<input type="text" id="gh_owner" autocomplete="off" spellcheck="false" placeholder="napr. sea-l-doucovani" value="${esc(c.owner||"")}"></label>
-          <label>Soukromý repozitář pro data<input type="text" id="gh_repo" autocomplete="off" spellcheck="false" placeholder="evidence-data" value="${esc(c.repo||"evidence-data")}"></label>
+          <label>Soukromý repozitář pro data<input type="text" id="gh_repo" autocomplete="off" spellcheck="false" placeholder="napr. evidende-data" value="${esc(c.repo||"")}"></label>
           <label>Větev<input type="text" id="gh_branch" autocomplete="off" spellcheck="false" value="${esc(c.branch||"main")}"></label>
           <label>Soubor<input type="text" id="gh_path" autocomplete="off" spellcheck="false" value="${esc(c.path||"data.json")}"></label>
+          <label>Tvoje jméno (podepíše změny v historii)<input type="text" id="gh_name" autocomplete="off" placeholder="napr. Khiem" value="${esc(c.name||"")}"></label>
           <label class="full">Token (fine-grained, jen pro tento repozitář, Contents: Read and write)<input type="password" id="gh_token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
           <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p>`}
       </section>
@@ -708,8 +762,8 @@ const VIEWS = {
         <div class="actions" style="justify-content:flex-start"><button class="btn" data-act="export">Stáhnout zálohu</button><button class="btn" data-act="import">Nahrát zálohu</button></div></section>
       <section class="panel"><h3>Skupiny dětí</h3><p>Ročníky nebo jiné skupiny, oddělené čárkou.</p>
         <div class="bar" style="margin:0"><div class="grow"><input type="text" id="groupsInput" value="${esc(S.settings.groups.join(", "))}" aria-label="Skupiny"></div><button class="btn" data-act="groups">Uložit skupiny</button></div></section>
-      <section class="panel"><h3>Ukázka a smazání</h3><p>${S.demo ? "Teď máš v appce ukázková data." : "Ukázka přepíše současná data smyšlenými dětmi, učiteli a platbami."}</p>
-        <div class="actions" style="justify-content:flex-start">${S.demo ? "" : `<button class="btn" data-act="demo">Načíst ukázku</button>`}<button class="btn danger" data-act="wipe">Smazat všechna data</button></div></section>
+      <section class="panel"><h3>Ukázka a smazání</h3><p>${S.demo ? "Teď máš v appce ukázková data." : GH.cfg ? "Smazání se týká všech, kdo appku používají. Ukázku jde načíst jen bez připojení ke GitHubu." : "Ukázka přepíše současná data smyšlenými dětmi, učiteli a platbami."}</p>
+        <div class="actions" style="justify-content:flex-start">${S.demo || GH.cfg ? "" : `<button class="btn" data-act="demo">Načíst ukázku</button>`}<button class="btn danger" data-act="wipe">Smazat všechna data</button></div></section>
     </div>`;
   }
 };
@@ -738,8 +792,7 @@ function wageTable(ym){
 function paintNotice(){
   const n = [];
   if (S.demo) n.push(`<div class="note"><span class="grow"><b>Ukázková data.</b> Děti, učitelé i platby jsou smyšlené. Až budeš chtít začít naostro, smaž je.</span><button class="btn small" data-act="wipe">Smazat ukázku</button></div>`);
-  if (GH.state === "conflict") n.push(`<div class="note bad"><span class="grow">Na GitHubu jsou mezitím jiná data, nejspíš z jiného zařízení. Vyber, která verze platí.</span><button class="btn small" data-act="ghremote">Použít verzi z GitHubu</button><button class="btn small" data-act="ghlocal">Přepsat GitHub touto verzí</button></div>`);
-  else if (GH.state === "err") n.push(`<div class="note bad"><span class="grow">${esc(GH.msg)} Změny jsou zatím uložené v prohlížeči.</span><button class="btn small" data-act="ghpush">Zkusit znovu</button></div>`);
+  if (GH.state === "err") n.push(`<div class="note bad"><span class="grow">${esc(GH.msg)} Změny jsou zatím uložené v prohlížeči.</span><button class="btn small" data-act="ghpush">Zkusit znovu</button></div>`);
   $("#notice").innerHTML = n.join("");
 }
 function render(){ $("#view").innerHTML = VIEWS[U.view](); }
@@ -1164,24 +1217,31 @@ $("#importFile").addEventListener("change", e => {
     let d; try { d = JSON.parse(rd.result); } catch(err) { toast("Soubor není platná záloha (.json)."); return; }
     if (!d || !Array.isArray(d.students)) { toast("V souboru chybí seznam dětí. Je to opravdu záloha evidence?"); return; }
     const go = () => { S = normalize(d); S.updatedAt = new Date().toISOString(); saveLocal(); GH.schedule(); renderAll(); toast(`Nahráno: ${S.students.length} dětí, ${S.courses.length} kurzů, ${S.teachers.length} učitelů.`); };
-    if (isEmpty()) go(); else confirmDlg("Nahrát zálohu?", `Současná data v appce nahradí obsah souboru ${file.name}. Pokud si je chceš nechat, stáhni si nejdřív zálohu.`, "Nahradit data", go, true);
+    if (isEmpty()) go(); else confirmDlg("Nahrát zálohu?", `Současná data v appce nahradí obsah souboru ${file.name}${GH.cfg ? ", a to u všech, kdo appku používají" : ""}. Pokud si je chceš nechat, stáhni si nejdřív zálohu.`, "Nahradit data", go, true);
   };
   rd.readAsText(file);
 });
 async function connectGitHub(){
-  const cfg = { owner:$("#gh_owner").value.trim(), repo:$("#gh_repo").value.trim(), branch:$("#gh_branch").value.trim() || "main", path:$("#gh_path").value.trim().replace(/^\/+/,"") || "data.json", token:$("#gh_token").value.trim() };
+  const cfg = { owner:$("#gh_owner").value.trim(), repo:$("#gh_repo").value.trim(), branch:$("#gh_branch").value.trim() || "main", path:$("#gh_path").value.trim().replace(/^\/+/,"") || "data.json", token:$("#gh_token").value.trim(), name:$("#gh_name").value.trim() };
   const err = $("#ghErr");
   if (!cfg.owner || !cfg.repo || !cfg.token) { err.textContent = "Vyplň uživatele, repozitář a token."; return; }
   err.textContent = "Ověřuji…"; GH.cfg = cfg;
   try {
-    const r = await fetch(GH.url(), {headers:GH.headers(), cache:"no-store"});
+    const r = await ghFetch(GH.url(), {headers:GH.headers(), cache:"no-store"});
     if (!r.ok) throw await GH.error(r);
     const repo = await r.json();
     if (!repo.private) { GH.cfg = null; err.textContent = "Tento repozitář je veřejný. Data dětí patří do soukromého repozitáře, jinak by je viděl kdokoli."; return; }
     if (repo.permissions && repo.permissions.push === false) throw new Error("Token má k repozitáři jen čtení. Dej mu oprávnění Contents: Read and write.");
-    GH.saveCfg(); const res = await GH.pull();
-    renderAll(); toast(res === "remote" ? "Připojeno. Data načtena z GitHubu." : "Připojeno. Data uložena na GitHub.");
-  } catch(e) { GH.cfg = null; GH.state = "off"; err.textContent = e.message || "Připojení se nepovedlo."; paintSync(); }
+    GH.base = null; GH.sha = null;
+    const remote = await GH.get();
+    const done = msg => { GH.saveCfg(); saveLocal(); GH.saveBase(); GH.set("ok", "Aktuální z GitHubu " + GH.stamp()); renderAll(); toast(msg); };
+    if (!remote) { GH.saveCfg(); await GH.put(); return done("Připojeno. Data jsou uložená na GitHubu."); }
+    if (isEmpty() || S.demo || same(S, remote)) { S = remote; GH.base = clone(remote); return done("Připojeno. Data načtena z GitHubu."); }
+    openDlg(`<h3 id="dlgTitle">Která data použít?</h3><p>Na GitHubu už data jsou (${pl(remote.students.length, "dítě", "děti", "dětí")}) a v tomto prohlížeči máš jiná (${pl(S.students.length, "dítě", "děti", "dětí")}). Obvykle chceš data z GitHubu, ta jsou společná pro všechny.</p>
+      <div class="actions"><button class="btn danger left" id="g_local">Přepsat GitHub daty z prohlížeče</button><button class="btn primary" id="g_remote">Použít data z GitHubu</button></div>`, "#g_remote");
+    $("#g_remote").onclick = () => { closeDlg(); S = remote; GH.base = clone(remote); done("Připojeno. Data načtena z GitHubu."); };
+    $("#g_local").onclick = async () => { closeDlg(); GH.saveCfg(); try { GH.base = clone(remote); await GH.put(); done("Připojeno. Data z prohlížeče jsou na GitHubu."); } catch(e2) { GH.set("err", e2.message); renderAll(); } };
+  } catch(e) { GH.cfg = null; GH.base = null; GH.state = "off"; err.textContent = e.message || "Připojení se nepovedlo."; paintSync(); }
 }
 
 document.addEventListener("click", e => {
@@ -1214,16 +1274,16 @@ document.addEventListener("click", e => {
   if (act === "xlsx-import") { loadXLSX().catch(() => {}); return $("#xlsxFile").click(); }
   if (act === "xlsx-export") return exportExcel();
   if (act === "export") return exportData();
+  if (act === "demo" && GH.cfg) return toast("Ukázka by přepsala společná data na GitHubu. Nejdřív v Nastavení GitHub odpoj.");
   if (act === "demo") { const go = () => { S = demoData(); saveLocal(); GH.schedule(); U.ym = todayYm; location.hash = "#prehled"; renderAll(); toast("Načtena ukázková data."); };
     return isEmpty() ? go() : confirmDlg("Načíst ukázku?", "Ukázka přepíše všechna současná data. Pokud si je chceš nechat, stáhni si nejdřív zálohu.", "Přepsat ukázkou", go, true); }
-  if (act === "wipe") return confirmDlg(S.demo ? "Smazat ukázku?" : "Smazat všechna data?", S.demo ? "Appka bude prázdná a můžeš nahrát svoje data." : "Smažou se všechny děti, kurzy, učitelé, platby i docházka. Pokud jsi připojený ke GitHubu, předchozí verze zůstane v historii repozitáře.", "Smazat", () => {
+  if (act === "wipe") return confirmDlg(S.demo ? "Smazat ukázku?" : "Smazat všechna data?", S.demo ? "Appka bude prázdná a můžeš nahrát svoje data." : GH.cfg ? "Smažou se všechny děti, kurzy, učitelé, platby i docházka, a to u všech, kdo appku používají. Předchozí verze zůstane jen v historii repozitáře na GitHubu." : "Smažou se všechny děti, kurzy, učitelé, platby i docházka.", "Smazat", () => {
     const g = S.demo ? null : S.settings.groups; S = blank(); S.settings.startYm = todayYm; if (g) S.settings.groups = g; S.updatedAt = new Date().toISOString(); saveLocal(); GH.schedule(); location.hash = "#prehled"; renderAll(); toast("Data smazána."); }, true);
   if (act === "groups") { const gs = $("#groupsInput").value.split(",").map(x => x.trim()).filter(Boolean); commit(D => { D.settings.groups = [...new Set(gs)]; }); return toast("Skupiny uloženy."); }
   if (act === "ghpush") return GH.push().then(renderAll);
-  if (act === "ghpull") return GH.pull().then(renderAll).catch(err => { GH.set("err", err.message); renderAll(); });
+  if (act === "ghpull") return GH.refresh().then(renderAll);
   if (act === "ghoff") return confirmDlg("Odpojit GitHub?", "Data zůstanou v tomto prohlížeči i na GitHubu. Token se z prohlížeče smaže.", "Odpojit", () => { GH.cfg = null; GH.sha = null; GH.saveCfg(); GH.state = "off"; renderAll(); });
-  if (act === "ghremote") return GH.resolve(true);
-  if (act === "ghlocal") return GH.resolve(false);
+  if (act === "ghname") { const v = $("#gh_me").value.trim(); GH.cfg.name = v; GH.saveCfg(); return toast(v ? `Změny se v historii podepíšou jako ${v}.` : "Jméno smazáno."); }
 });
 document.addEventListener("submit", e => { if (e.target.id === "ghForm") { e.preventDefault(); connectGitHub(); } });
 document.addEventListener("keydown", e => {
@@ -1261,7 +1321,9 @@ window.addEventListener("beforeunload", e => { if (GH.cfg && (GH.state === "pend
   S = loadLocal() || normalize(blank());
   GH.load();
   route();
-  if (GH.cfg) { try { await GH.pull(); renderAll(); } catch(e){ GH.set("err", e.message || "GitHub teď není dostupný."); renderAll(); } }
+  if (GH.cfg) { await GH.refresh(); renderAll(); }
+  setInterval(() => { if (GH.cfg && !document.hidden && GH.state !== "pending") GH.refresh(true); }, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && GH.cfg && GH.state !== "pending") GH.refresh(true); });
 })();
 </script>
 </body>
