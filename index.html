@@ -112,7 +112,35 @@ h2 .sub{font-weight:400}
 .scroll{overflow-x:auto}
 
 .r-kids{grid-template-columns:2rem minmax(0,2fr) minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) 6rem}
-.r-pay{grid-template-columns:minmax(0,1.8fr) 6rem 6rem 7.5rem 9rem 7rem 7.5rem}
+.r-pay{grid-template-columns:minmax(0,1.8fr) 6rem 6rem 7.5rem 9rem 7rem 12.5rem}
+.c-btns{display:flex;gap:6px;justify-content:flex-end}
+.r-rcpt{grid-template-columns:5.5rem 4.5rem minmax(0,1fr) 7rem 7rem}
+.ritems{margin:4px 0 8px}.ritem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}.ritem:first-child{border-top:0}.ritem .name{flex:1;color:var(--ink)}
+.ritem input{width:6.5rem;text-align:right}.ritem .mini{display:flex;align-items:center;gap:6px}
+.rtotal{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--soft);border-radius:8px}.rtotal b{font-size:1.3rem}.rtotal span{color:var(--muted);font-size:.86rem}
+.form .chk{display:flex;flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-weight:500}
+#printArea{display:none}
+@media print{
+  @page{size:A4;margin:8mm}
+  body.printing{background:#fff!important}
+  body.printing>*:not(#printArea){display:none!important}
+  body.printing #printArea{display:block;color:#111;font-family:Calibri,Carlito,Arial,sans-serif}
+}
+.pd{position:relative;height:138mm;overflow:hidden;box-sizing:border-box;padding:3mm 6mm;font-size:10pt;line-height:1.25;color:#111}
+.pd i{font-style:normal;color:#1d3fa6;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-size:11.5pt}
+.pd .o{display:inline-block;border:1.6px solid #1d3fa6;border-radius:50%;padding:0 3px;margin:-2px -1px;line-height:1.15}
+.pd-tag{position:absolute;right:6mm;bottom:3mm;font-size:8pt;color:#888}
+.pd-h{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:6mm;align-items:center}.pd-logo{height:13mm;width:auto}
+.pd-t b{font-size:14pt}.pd-t small,.pd-no small,.pd-stamp{font-size:9.5pt}.pd-org{font-size:13pt}
+.pd-stamp{margin:-4mm 0 1.5mm 92mm}
+.pd-l{margin-top:2mm}
+.pd-r{display:grid;grid-template-columns:auto 1fr auto 28mm;gap:3mm;align-items:baseline}
+.pd .f{border-bottom:1px dotted #999;min-height:1.2em;display:inline-block;padding:0 2mm}.pd .f.m{min-width:60mm}
+.pd-vs{grid-template-columns:auto 1fr;margin-top:2mm}
+.pd-big{font-size:12pt;margin-top:.5mm}.pd-big .gap{display:inline-block;width:8mm}
+.pd-g{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 8mm;margin-top:2mm}.pd-g .w{grid-column:1/-1}.pd-g .amt{font-size:13pt}
+.pd-sig{display:grid;grid-template-columns:1fr 1fr;gap:2mm 8mm;margin-top:3mm}
+.pd-cut{border-top:1px dashed #aaa;margin:1mm 0}
 .r-exp{grid-template-columns:5.5rem minmax(0,1fr) minmax(0,1.6fr) 7rem}
 .cats{display:grid;gap:2px;padding:6px 0}
 .cat{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) 6.5rem;gap:10px;align-items:center;padding:7px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px}
@@ -215,7 +243,8 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand-ink);flex:n
 @media (max-width:820px){
   .row.head{display:none}
   .r-kids{grid-template-columns:2rem 1fr auto} .r-kids .c-grp,.r-kids .c-crs,.r-kids .c-tel{display:none}
-  .r-pay{grid-template-columns:1fr 1fr} .r-pay .name{grid-column:1/-1} .r-pay .c-meth,.r-pay .c-date{display:none}
+  .r-pay{grid-template-columns:1fr 1fr} .r-pay .name{grid-column:1/-1} .r-pay .c-meth,.r-pay .c-date{display:none} .r-pay .c-btns{justify-content:flex-start}
+  .r-rcpt{grid-template-columns:4.5rem 1fr auto} .r-rcpt .c-date{display:none} .r-rcpt > span:last-child{grid-column:1/-1}
   .r-pay label.mini{display:grid;gap:2px;font-size:.72rem;color:var(--muted)}
   .r-exp{grid-template-columns:4.5rem 1fr auto} .r-exp .c-note{grid-column:2/3}
   .cat{grid-template-columns:minmax(0,7.5rem) minmax(0,1fr) auto;padding:7px 10px}
@@ -295,12 +324,13 @@ let S = null;
 function blank(){
   return { v:1, updatedAt:"", demo:false,
     settings:{ name:"Evidence doučování", startYm:"", groups:["Předškoláci","Prvňáci","Druháci","Třeťáci","Čtvrťáci","Individuální"] },
-    students:[], teachers:[], courses:[], payments:{}, attendance:{}, work:{}, expenses:[] };
+    students:[], teachers:[], courses:[], payments:{}, attendance:{}, work:{}, expenses:[], receipts:[] };
 }
 function normalize(d){
   const b = blank(), o = Object.assign(b, d || {});
   o.settings = Object.assign(blank().settings, (d && d.settings) || {});
-  ["students","teachers","courses","expenses"].forEach(k => { if (!Array.isArray(o[k])) o[k] = []; });
+  ["students","teachers","courses","expenses","receipts"].forEach(k => { if (!Array.isArray(o[k])) o[k] = []; });
+  o.receipts.forEach(r => { if (!r.id) r.id = uid(); ["items","codes","douc","vs"].forEach(k => { if (!Array.isArray(r[k])) r[k] = []; }); });
   ["payments","attendance","work"].forEach(k => { if (!o[k] || typeof o[k] !== "object" || Array.isArray(o[k])) o[k] = {}; });
   o.students.forEach(s => { if (!Array.isArray(s.courses)) s.courses = []; if (!s.id) s.id = uid(); });
   o.courses.forEach(c => { if (!Array.isArray(c.days)) c.days = c.dow ? [c.dow] : []; if (!c.id) c.id = uid();
@@ -616,7 +646,7 @@ const TOOLS = {
   kurzy: () => `<div class="bar"><span class="grow"></span><button class="btn primary" id="addCourse">+ Přidat kurz</button></div>`,
   dochazka: () => `<div class="bar"><div class="w"><input type="date" id="date" value="${U.date}" aria-label="Datum lekce"></div>
       <button class="btn" data-day="-1">Předchozí den</button><button class="btn" data-day="0">Dnes</button><button class="btn" data-day="1">Další den</button></div>`,
-  platby: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn" data-act="xlsx-export">Stáhnout Excel</button></div>`,
+  platby: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn" data-act="xlsx-export">Stáhnout Excel</button><button class="btn primary" data-act="rcpt-new">+ Příjmový doklad</button></div>`,
   vydaje: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addExp">+ Přidat účet nebo nákup</button></div>`,
   ucitele: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addTeacher">+ Přidat učitele</button></div>`,
   nastaveni: () => ""
@@ -731,9 +761,10 @@ const VIEWS = {
         <span class="c-meth"><select data-k="pm-${s.id}" data-pay="method" data-s="${s.id}" aria-label="Způsob platby ${esc(s.name)}">${Object.entries(METHODS).map(([v,t]) => `<option value="${v}"${(p.method||"")===v?" selected":""}>${t}</option>`).join("")}</select></span>
         <span class="c-date"><input type="date" data-k="pt-${s.id}" data-pay="date" data-s="${s.id}" value="${esc(p.date||"")}" aria-label="Datum platby ${esc(s.name)}"></span>
         <span><span class="pill ${k}">${l}</span></span>
-        <span>${k === "good" || !priceOf(s,ym) ? "" : `<button class="btn small" data-payall="${s.id}">Zaplatil vše</button>`}</span></div>`; }).join("") + `</div>`
+        <span class="c-btns">${k === "good" || !priceOf(s,ym) ? "" : `<button class="btn small" data-payall="${s.id}">Zaplatil vše</button>`}<button class="btn small" data-rnew="${s.id}" title="Vystavit příjmový doklad">Doklad</button></span></div>`; }).join("") + `</div>`
       : `<div class="sheet"><div class="empty">V tomto měsíci tu nikdo není.</div></div>`;
     h += `<p class="hint">Cena se předvyplní podle kurzů dítěte. Úprava ceny platí jen pro tento měsíc. Neaktivní děti zůstávají v měsících, kde mají platbu nebo docházku.</p>`;
+    h += receiptList(ym);
     return h;
   },
   vydaje(){
@@ -795,6 +826,16 @@ const VIEWS = {
           <label>Tvoje jméno (podepíše změny v historii)<input type="text" id="gh_name" autocomplete="off" placeholder="napr. Khiem" value="${esc(c.name||"")}"></label>
           <label class="full">Token (fine-grained, jen pro tento repozitář, Contents: Read and write)<input type="password" id="gh_token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
           <div class="full"><button class="btn primary" type="submit">Připojit</button></div></form><p class="err" id="ghErr"></p></details>`}
+      <section class="panel"><h3>Příjmový doklad</h3><p>Co se tiskne v hlavičce a v nabídkách dokladu. Položky odděluj čárkou.</p>
+        <form class="form" novalidate onsubmit="return false">
+          <label>Označení<input type="text" id="rc_org" value="${esc(rc().org)}" autocomplete="off"></label>
+          <label>Kód<input type="text" id="rc_code" value="${esc(rc().code)}" autocomplete="off"></label>
+          <label>Město<input type="text" id="rc_city" value="${esc(rc().city)}" autocomplete="off"></label>
+          <label>Učebna<input type="text" id="rc_room" value="${esc(rc().room)}" autocomplete="off"></label>
+          <label class="full">Variabilní symboly (jméno: číslo)<input type="text" id="rc_vs" value="${esc(rc().vs)}" autocomplete="off"></label>
+          <label class="full">Kurzy češtiny<input type="text" id="rc_codes" value="${esc(rc().codes)}" autocomplete="off"></label>
+          <label class="full">Doučování<input type="text" id="rc_douc" value="${esc(rc().douc)}" autocomplete="off"></label>
+          <div class="full"><button class="btn primary" type="button" data-act="rcptcfg">Uložit</button></div></form></section>
       <section class="panel"><h3>Excel</h3><p>Stáhni všechna data do Excelu (přehled po měsících, děti, kurzy, učitelé, platby, docházka, lekce, výkaz hodin, výdaje), nebo data z Excelu nahraj. Nahrání nic nemaže: děti a záznamy přidá nebo upraví podle jména a před uložením ukáže, co se změní. Umí i původní tabulku Evidence centrum.</p>
         <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="xlsx-export">Stáhnout Excel</button><button class="btn" data-act="xlsx-import">Nahrát Excel</button></div></section>
       <section class="panel"><h3>Záloha</h3><p>Úplná záloha appky v jednom souboru (.json). Obnova přepíše všechno, co je teď v appce.</p>
@@ -981,6 +1022,166 @@ function teacherDlg(id){
   $("#t_save").onclick = save; $("#f").onsubmit = e => { e.preventDefault(); save(); };
   if (id) armDelete($("#t_del"), $("#t_err"), "Kurzy tohoto učitele zůstanou bez učitele. Radši nastav stav Neučí.", () => commit(D => {
     D.teachers = D.teachers.filter(x => x.id !== id); D.courses.forEach(c => { c.teacherIds = cT(c).filter(x => x !== id); }); }));
+}
+/* =========================================================
+   Příjmový doklad
+   ========================================================= */
+const RCPT_DEF = {org:"SEA_L", code:"T958", city:"Praha", room:"Kunratice", vs:"Velčevová: 1, Kocourek: 2, Čapková: 3", codes:"A0, A1, A2, MŠ, B1, B2, 1ST, 2ST, K", douc:"M, F"};
+const rc = () => Object.assign({}, RCPT_DEF, S.settings.receipt || {});
+const listOf = t => String(t || "").split(",").map(x => x.trim()).filter(Boolean);
+const vsList = () => listOf(rc().vs).map(x => { const m = x.match(/^(.*?)\s*[:=]\s*(\S+)$/); return m ? {label:m[1].trim(), num:m[2]} : {label:x, num:x}; });
+const lc = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+function czWords(n){
+  n = Math.round(Math.abs(Number(n) || 0));
+  const U1 = ["nula","jedna","dva","tři","čtyři","pět","šest","sedm","osm","devět","deset","jedenáct","dvanáct","třináct","čtrnáct","patnáct","šestnáct","sedmnáct","osmnáct","devatenáct"];
+  const T = ["","","dvacet","třicet","čtyřicet","padesát","šedesát","sedmdesát","osmdesát","devadesát"];
+  const H = ["","sto","dvě stě","tři sta","čtyři sta","pět set","šest set","sedm set","osm set","devět set"];
+  const lt1000 = x => { const p = []; if (x >= 100) { p.push(H[Math.floor(x/100)]); x %= 100; } if (x >= 20) { p.push(T[Math.floor(x/10)]); x %= 10; if (x) p.push(U1[x]); } else if (x) p.push(U1[x]); return p.join(" "); };
+  if (!n) return "nula korun českých";
+  const parts = [], mil = Math.floor(n / 1e6), th = Math.floor(n / 1000) % 1000, r = n % 1000;
+  if (mil) parts.push(mil === 1 ? "jeden milion" : `${lt1000(mil).replace(/^dva$/, "dva")} ${mil >= 2 && mil <= 4 ? "miliony" : "milionů"}`);
+  if (th) parts.push(th === 1 ? "tisíc" : `${lt1000(th)} ${th >= 2 && th <= 4 ? "tisíce" : "tisíc"}`);
+  if (r) parts.push(lt1000(r));
+  const w = parts.join(" ");
+  return w.charAt(0).toUpperCase() + w.slice(1) + (n === 1 ? " koruna česká" : n >= 2 && n <= 4 ? " koruny české" : " korun českých");
+}
+function nextRcptNo(date){
+  const y = String(date || todayStr).slice(0,4);
+  const max = S.receipts.reduce((a, r) => { const m = String(r.no || "").match(/^(\d+)\/(\d{4})$/); return m && m[2] === y ? Math.max(a, Number(m[1])) : a; }, 0);
+  return `${String(max + 1).padStart(3, "0")}/${y}`;
+}
+const rcptDate = ds => ds ? `${Number(ds.slice(8))}. ${Number(ds.slice(5,7))}. ${ds.slice(0,4)}` : "";
+function rcptItem(s, ym){
+  const price = priceOf(s, ym), paid = paidOf(s, ym);
+  return {sid:s.id, name:s.name, amount: paid >= price && paid ? paid : Math.max(0, price - paid)};
+}
+function rcptDerive(R){
+  const ss = R.items.map(i => student(i.sid)).filter(Boolean), cs = [...new Set(ss.flatMap(s => s.courses))].map(course).filter(Boolean);
+  const codes = listOf(rc().codes), out = {codes:[], vs:[], days:"", hours:"", start:""};
+  cs.forEach(c => { const n = lc(c.name), m = n.match(/(\d+)\.\s*tr/);
+    const code = /predsk|\bms\b|skolk/.test(n) ? "MŠ" : m ? (Number(m[1]) <= 5 ? "1ST" : "2ST") : "";
+    if (code && codes.includes(code) && !out.codes.includes(code)) out.codes.push(code);
+    cT(c).forEach(tid => { const sur = lc((teacher(tid)?.name || "").split(" ").pop()); const v = vsList().find(x => lc(x.label) === sur || (sur && lc(x.label).includes(sur)));
+      if (v && !out.vs.includes(v.num)) out.vs.push(v.num); }); });
+  const withDays = cs.filter(c => c.days.length);
+  out.days = withDays.map(c => c.days.slice().sort().map(d => DAYS_SHORT[d-1]).join("+")).filter((v, i, a) => a.indexOf(v) === i).join(" / ");
+  out.hours = withDays.map(c => `${c.days.length}×${Math.round(hoursOf(c) * 60)} min`).filter((v, i, a) => a.indexOf(v) === i).join(" / ");
+  const ym = R.ym, from = ss.map(s => s.from || "").sort().pop() || "", first = [...Array(daysIn(ym))].map((_, i) => `${ym}-${pad(i + 1)}`)
+    .find(d => d >= from && withDays.some(c => c.days.includes(dowOf(d))));
+  out.start = first || "";
+  return out;
+}
+function rcptHtml(r, tag){
+  const o = rc(), circ = (v, on) => on ? `<span class="o">${esc(v)}</span>` : esc(v);
+  const names = r.items.map(i => i.name).join(" + "), part = names && lc(names) !== lc(r.payer) ? names : "";
+  const total = r.items.reduce((a, i) => a + (Number(i.amount) || 0), 0);
+  const amt = r.items.length > 1 ? r.items.map(i => Math.round(Number(i.amount) || 0).toLocaleString("cs-CZ")).join(" + ") + ` = ${kc(total)}` : kc(total);
+  return `<section class="pd">${tag ? `<div class="pd-tag">${esc(tag)}</div>` : ""}
+    <div class="pd-h"><img class="pd-logo" src="logo.png" alt="SEA-l"><div class="pd-t"><b>PŘÍJMOVÝ DOKLAD</b> <small>o zaplacení kurzovného</small></div><div class="pd-org">${esc(o.org)}</div><div class="pd-org">${esc(o.code)}</div><div class="pd-no"><small>Doklad číslo:</small> <i>${esc(r.no)}</i></div></div>
+    <div class="pd-stamp">Razítko dodavatele:</div>
+    <div class="pd-l">Objednatel kurzu a zároveň plátce kurzovného:</div>
+    <div class="pd-r"><span>Příjmení a jméno:</span><i class="f">${esc(r.payer)}</i><span>Datum narození:</span><i class="f s">${esc(r.payerBirth || "")}</i></div>
+    <div class="pd-l">Účastník kurzu v případě, že se nejedná o objednatele (v případě nezletilých):</div>
+    <div class="pd-r"><span>Příjmení a jméno:</span><i class="f">${esc(part)}</i><span>Datum narození:</span><i class="f s">${esc(r.birth || "")}</i></div>
+    <div class="pd-r pd-vs"><span>Variabilní symbol kurzu (zakroužkujte):</span><span>${vsList().map(v => `${esc(v.label)}: ${circ(v.num, r.vs.includes(v.num))}`).join(", ")}</span></div>
+    <div class="pd-big">PÚ: KURZOVNÉ ČJ</div>
+    <div class="pd-big">Kurz češtiny ${listOf(o.codes).map(c => circ(c, r.codes.includes(c))).join(", ")} <span class="gap"></span>DOUČ: ${listOf(o.douc).map(c => circ(c, r.douc.includes(c))).join(", ")},</div>
+    <div class="pd-big">jiné: <i class="f m">${esc(r.other || "")}</i></div>
+    <div class="pd-g">
+      <span>Město: ${esc(r.city)}</span><span>Učebna: ${esc(r.room)}</span>
+      <span>Datum zahájení: <i>${esc(rcptDate(r.start))}</i></span><span>Datum ukončení, pokud je předem plánováno: <i>${esc(rcptDate(r.end))}</i></span>
+      <span>Počet hodin výuky (1 hodina = 60 minut): <i>${esc(r.hours)}</i></span><span>Dny výuky: <i>${esc(r.days)}</i></span>
+      <span>Datum vystavení: <i>${esc(rcptDate(r.date))}</i></span><span>Celkem částka: <i class="amt">${esc(amt)}</i></span>
+      <span class="w">Celkem částka (slovy): <i>${esc(czWords(total))}</i></span>
+    </div>
+    <div class="pd-sig"><span>Podpis pokladníka:</span><span>Podpis účetní:</span><span>Schválil:</span><span></span><span>Podpis plátce/objednatele:</span><span>Podpis příjemce/dodavatele:</span></div>
+  </section>`;
+}
+function printReceipt(r, two){
+  let el = $("#printArea"); if (!el) { el = document.createElement("div"); el.id = "printArea"; document.body.appendChild(el); }
+  el.innerHTML = rcptHtml(r, two ? "Pro plátce" : "") + (two ? `<div class="pd-cut"></div>` + rcptHtml(r, "Pro centrum") : "");
+  document.body.classList.add("printing");
+  setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); }, 60);
+}
+function receiptDlg(id, sid){
+  const ex = id ? S.receipts.find(r => r.id === id) : null; if (id && !ex) return;
+  const o = rc();
+  const R = ex ? clone(ex) : {id:uid(), no:"", date:todayStr, ym:U.ym, payer:"", payerBirth:"", birth:"", items:[], codes:[], douc:[], other:"", vs:[], city:o.city, room:o.room, start:"", end:"", hours:"", days:""};
+  if (!ex) { const s = sid && student(sid); if (s) { R.items.push(rcptItem(s, R.ym)); R.payer = s.parent || s.name; } R.no = nextRcptNo(R.date); Object.assign(R, rcptDerive(R)); }
+  const touched = new Set(ex ? ["codes","vs","days","hours","start"] : []);
+  let pay = !ex;
+  const kidOpts = () => { const cur = new Set(R.items.map(i => i.sid)), first = student(R.items[0]?.sid);
+    const sib = s => first && s.id !== first.id && ((first.parent && lc(s.parent) === lc(first.parent)) || (first.phone && String(s.phone||"").replace(/\D/g,"") === String(first.phone).replace(/\D/g,"")));
+    const rest = S.students.filter(s => !cur.has(s.id) && (s.status !== "neaktivni" || sib(s))).sort(byName), sibs = rest.filter(sib), others = rest.filter(s => !sib(s));
+    return `<option value="">${R.items.length ? "+ Přidat další dítě (sourozence)…" : "Vyber dítě…"}</option>${sibs.length ? `<optgroup label="Sourozenci">${sibs.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join("")}</optgroup>` : ""}<optgroup label="${sibs.length ? "Ostatní děti" : "Děti"}">${others.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join("")}</optgroup>`; };
+  const chips = (key, vals, labels) => `<div class="chips">${vals.map((v, i) => `<button type="button" class="chip" data-rk="${key}" data-v="${esc(v)}" aria-pressed="${R[key].includes(v)}">${esc(labels ? labels[i] : v)}</button>`).join("")}</div>`;
+  const total = () => R.items.reduce((a, i) => a + (Number(i.amount) || 0), 0);
+  const draw = () => {
+    const unpaid = R.items.some(i => { const s = student(i.sid); return s && paidOf(s, R.ym) < priceOf(s, R.ym); });
+    openDlg(`<h3 id="dlgTitle">${ex ? `Příjmový doklad ${esc(R.no)}` : "Nový příjmový doklad"}</h3><form class="form" id="f" novalidate>
+      <label>Číslo dokladu<input type="text" id="r_no" value="${esc(R.no)}" autocomplete="off"></label>
+      <label>Datum vystavení<input type="date" id="r_date" value="${esc(R.date)}"></label>
+      <div class="full lbl">Za koho se platí<div class="sheet ritems">${R.items.map((i, k) => `<div class="ritem"><span class="name">${esc(i.name)}</span><label class="mini"><input type="number" inputmode="numeric" min="0" step="100" data-ri="${k}" value="${esc(i.amount)}" aria-label="Částka za ${esc(i.name)}"> Kč</label><button type="button" class="btn small" data-rdel="${k}" aria-label="Odebrat ${esc(i.name)}">✕</button></div>`).join("") || `<div class="empty">Zatím nikdo.</div>`}</div>
+        <select id="r_add" aria-label="Přidat dítě">${kidOpts()}</select></div>
+      <label>Plátce (objednatel) – příjmení a jméno<input type="text" id="r_payer" value="${esc(R.payer)}" autocomplete="off"></label>
+      <label>Datum narození plátce<input type="text" id="r_pbirth" value="${esc(R.payerBirth)}" placeholder="nepovinné" autocomplete="off"></label>
+      <div class="full lbl">Variabilní symbol kurzu${chips("vs", vsList().map(v => v.num), vsList().map(v => `${v.label}: ${v.num}`))}</div>
+      <div class="full lbl">Kurz češtiny${chips("codes", listOf(o.codes))}</div>
+      <div class="lbl">Doučování${chips("douc", listOf(o.douc))}</div>
+      <label>Jiné<input type="text" id="r_other" value="${esc(R.other)}" autocomplete="off"></label>
+      <label>Datum zahájení<input type="date" id="r_start" value="${esc(R.start)}"></label>
+      <label>Datum ukončení (nepovinné)<input type="date" id="r_end" value="${esc(R.end)}"></label>
+      <label>Počet hodin výuky<input type="text" id="r_hours" value="${esc(R.hours)}" placeholder="např. 2×60 min" autocomplete="off"></label>
+      <label>Dny výuky<input type="text" id="r_days" value="${esc(R.days)}" placeholder="např. Po+St" autocomplete="off"></label>
+      <label>Město<input type="text" id="r_city" value="${esc(R.city)}" autocomplete="off"></label>
+      <label>Učebna<input type="text" id="r_room" value="${esc(R.room)}" autocomplete="off"></label>
+      <div class="full rtotal"><b id="r_total">${kc(total())}</b><span id="r_words">${esc(czWords(total()))}</span></div>
+      ${!ex && R.items.length ? `<label class="full chk"><input type="checkbox" id="r_pay"${pay && unpaid ? " checked" : ""}> Zapsat částky do plateb za ${ymLabel(R.ym).toLowerCase()} jako zaplacené hotově${unpaid ? "" : " (už je zaplaceno)"}</label>` : ""}
+      <label class="full chk"><input type="checkbox" id="r_two" checked> Tisknout 2× na jednu stránku A4 (pro plátce a pro centrum)</label>
+    </form><p class="err" id="r_err"></p>
+    <div class="actions">${ex ? `<button class="btn danger left" id="r_del">Smazat</button>` : ""}<button class="btn" id="r_cancel">Zavřít</button><button class="btn" id="r_save">Uložit</button><button class="btn primary" id="r_print">Uložit a vytisknout</button></div>`, "#r_payer");
+    const bind = (sel, key, isTouched) => { const el = $(sel); el.oninput = () => { R[key] = el.value; if (isTouched) touched.add(key); }; };
+    bind("#r_no","no"); bind("#r_payer","payer"); bind("#r_pbirth","payerBirth"); bind("#r_other","other"); bind("#r_city","city"); bind("#r_room","room");
+    bind("#r_start","start",1); bind("#r_end","end"); bind("#r_hours","hours",1); bind("#r_days","days",1);
+    $("#r_date").oninput = () => { R.date = $("#r_date").value; };
+    $$("#dialog [data-ri]").forEach(el => el.oninput = () => { R.items[Number(el.dataset.ri)].amount = el.value === "" ? "" : Number(el.value); $("#r_total").textContent = kc(total()); $("#r_words").textContent = czWords(total()); });
+    $$("#dialog [data-rdel]").forEach(el => el.onclick = () => { R.items.splice(Number(el.dataset.rdel), 1); rederive(); draw(); });
+    $("#r_add").onchange = () => { const s = student($("#r_add").value); if (!s) return; const wasEmpty = !R.items.length; R.items.push(rcptItem(s, R.ym)); if (wasEmpty && !R.payer) R.payer = s.parent || s.name; rederive(); draw(); };
+    $$("#dialog [data-rk]").forEach(el => el.onclick = () => { const k = el.dataset.rk, v = el.dataset.v; R[k] = R[k].includes(v) ? R[k].filter(x => x !== v) : [...R[k], v]; touched.add(k); el.setAttribute("aria-pressed", R[k].includes(v)); });
+    if ($("#r_pay")) $("#r_pay").onchange = () => { pay = $("#r_pay").checked; };
+    $("#r_cancel").onclick = closeDlg;
+    const save = andPrint => {
+      if (!R.payer.trim()) { $("#r_err").textContent = "Vyplň plátce."; return null; }
+      if (!R.items.length && !R.other.trim()) { $("#r_err").textContent = "Vyber dítě, za které se platí."; return null; }
+      if (!(total() > 0)) { $("#r_err").textContent = "Vyplň částku."; return null; }
+      if (!R.no.trim()) R.no = nextRcptNo(R.date);
+      if (S.receipts.some(r => r.id !== R.id && r.no === R.no.trim())) { $("#r_err").textContent = `Doklad číslo ${R.no} už existuje. Změň číslo.`; return null; }
+      const doPay = !ex && $("#r_pay") && $("#r_pay").checked, rec = Object.assign(clone(R), {no:R.no.trim(), payer:R.payer.trim(), total:total()});
+      commit(D => {
+        const i = D.receipts.findIndex(r => r.id === rec.id); if (i >= 0) D.receipts[i] = rec; else D.receipts.push(rec);
+        if (doPay) rec.items.forEach(it => { const s = D.students.find(x => x.id === it.sid); if (!s || !(Number(it.amount) > 0)) return;
+          const m = D.payments[rec.ym] || (D.payments[rec.ym] = {}), p = m[s.id] || (m[s.id] = {});
+          if (p.price === undefined || p.price === "") p.price = priceOf(s, rec.ym);
+          p.paid = (Number(p.paid) || 0) + Number(it.amount); p.method = "hotove"; p.date = rec.date; });
+      });
+      closeDlg(); toast(`Doklad ${rec.no} uložen.`); return rec;
+    };
+    const two = () => $("#r_two").checked;
+    $("#r_save").onclick = () => save(false);
+    $("#r_print").onclick = () => { const t = two(), rec = save(); if (rec) printReceipt(rec, t); };
+    $("#f").onsubmit = e => { e.preventDefault(); save(false); };
+    if (ex) armDelete($("#r_del"), $("#r_err"), "Doklad zmizí ze seznamu. Platby zůstanou, jak jsou.", () => commit(D => { D.receipts = D.receipts.filter(r => r.id !== R.id); }));
+  };
+  const rederive = () => { const d = rcptDerive(R); ["codes","vs","days","hours","start"].forEach(k => { if (!touched.has(k)) R[k] = d[k]; }); };
+  draw();
+}
+function receiptList(ym){
+  const list = S.receipts.filter(r => r.ym === ym || String(r.date || "").slice(0,7) === ym).sort((a, b) => String(b.no).localeCompare(String(a.no), "cs", {numeric:true}));
+  return `<h2>Příjmové doklady za ${ymLabel(ym).toLowerCase()} <span class="sub">${list.length ? kc(list.reduce((a, r) => a + (Number(r.total) || 0), 0)) : ""}</span></h2>` +
+    (list.length ? `<div class="sheet">${list.map(r => `<div class="row click r-rcpt" data-rcpt="${r.id}" tabindex="0" role="button"><span class="num">${esc(r.no)}</span><span class="num c-date">${r.date ? dateLabel(r.date) : ""}</span>
+      <span><span class="name">${esc(r.payer)}</span>${r.items.length && r.items.map(i => i.name).join(" + ") !== r.payer ? `<div class="sub">${esc(r.items.map(i => i.name).join(" + "))}</div>` : ""}</span>
+      <span class="money name">${kc(r.total)}</span><span><button class="btn small" data-rprint="${r.id}">Vytisknout</button></span></div>`).join("")}</div>`
+      : `<div class="sheet"><div class="empty">Zatím žádné doklady. Doklad vystavíš tlačítkem „Doklad“ u dítěte nebo „+ Příjmový doklad“ nahoře.</div></div>`);
 }
 function expenseSection(f){
   const ym = U.ym, sc = U.expScope;
@@ -1287,6 +1488,8 @@ async function exportExcel(){
   add("Lekce", ["Datum","Den","Kurz","ID kurzu","Učitelé","Probíralo se","Přítomno","Chybí","Omluveno"], les, [11,5,20,10,32,44,9,7,9]);
   const wds = Object.keys(S.work || {}).sort(), wts = [...S.teachers].sort(byName).filter(t => wds.some(d => ((S.work[d] || {}).hours || {})[t.id]));
   add("Výkaz hodin", ["Datum","Den", ...wts.map(t => t.name), "Poznámka"], wds.map(d => [d, DAYS_SHORT[dowOf(d)-1], ...wts.map(t => ((S.work[d] || {}).hours || {})[t.id] || ""), (S.work[d] || {}).note || ""]), [11,5, ...wts.map(() => 12), 30]);
+  add("Doklady", ["Číslo","Datum vystavení","Plátce","Účastníci","Částka","Variabilní symbol","Kurz","Za měsíc"],
+    [...S.receipts].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(r => [r.no, r.date || "", r.payer || "", r.items.map(i => i.name).join(" + "), Number(r.total) || 0, r.vs.join(", "), [...r.codes, ...r.douc.map(d => "DOUČ " + d), r.other].filter(Boolean).join(", "), r.ym || ""]), [10,12,26,30,10,10,18,9]);
   add("Výdaje", ["ID","Datum","Kategorie","Učitel","Částka","Za měsíc","Poznámka"],
     [...S.expenses].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(e => [e.id, e.date || "", e.category || "", e.teacherId ? tName(e.teacherId) : "", Number(e.amount) || 0, e.forYm || "", e.note || ""]), [12,11,15,22,10,9,36]);
   X.writeFile(wb, `evidence-${todayStr}.xlsx`, {compression:true});
@@ -1462,7 +1665,7 @@ async function connectWith(cfg, err){
 }
 
 document.addEventListener("click", e => {
-  const t = e.target.closest("button, [data-kid], [data-course], [data-teacher], [data-exp], .overlay, #syncBadge"); if (!t) return;
+  const t = e.target.closest("button, [data-kid], [data-course], [data-teacher], [data-exp], [data-rcpt], .overlay, #syncBadge"); if (!t) return;
   if (t.id === "overlay") { if (e.target === t) closeDlg(); return; }
   if (t.id === "syncBadge") { location.hash = "#nastaveni"; return; }
   if (t.dataset.kid) return kidDlg(t.dataset.kid);
@@ -1487,11 +1690,16 @@ document.addEventListener("click", e => {
   if (t.dataset.allp) { const c = course(t.dataset.allp), r = (S.attendance[U.date]||{})[c.id] || {};
     return commit(D => { const day = D.attendance[U.date] || (D.attendance[U.date] = {}), rec = day[c.id] || (day[c.id] = {marks:{}, note:"", teacherIds:[...cT(c)]});
       enrolled(c).forEach(s => { if (!(r.marks||{})[s.id]) rec.marks[s.id] = "P"; }); }); }
+  if (t.dataset.rprint) { const r = S.receipts.find(x => x.id === t.dataset.rprint); if (r) printReceipt(r, true); return; }
+  if (t.dataset.rcpt) return receiptDlg(t.dataset.rcpt);
+  if (t.dataset.rnew) return receiptDlg(null, t.dataset.rnew);
   if (t.dataset.payall) { const s = student(t.dataset.payall), price = priceOf(s, U.ym);
     return commit(D => { const m = D.payments[U.ym] || (D.payments[U.ym] = {}), p = m[s.id] || (m[s.id] = {}); p.price = price; p.paid = price; if (!p.date) p.date = todayStr; }); }
   if (t.dataset.wage) { const tch = teacher(t.dataset.wage); return expenseDlg(null, {category:"Lektor", teacherId:tch.id, amount:Number(t.dataset.amount), forYm:U.ym, note:`Výplata za ${ymLabel(U.ym).toLowerCase()}`, date: U.ym < todayYm ? todayStr : `${U.ym}-${pad(daysIn(U.ym))}`}); }
   const act = t.dataset.act;
   if (act === "import") return $("#importFile").click();
+  if (act === "rcpt-new") return receiptDlg(null, null);
+  if (act === "rcptcfg") { const v = id => $(id).value.trim(); return commit(D => { D.settings.receipt = {org:v("#rc_org"), code:v("#rc_code"), city:v("#rc_city"), room:v("#rc_room"), vs:v("#rc_vs"), codes:v("#rc_codes"), douc:v("#rc_douc")}; }), toast("Nastavení dokladu uloženo."); }
   if (act === "xlsx-import") { loadXLSX().catch(() => {}); return $("#xlsxFile").click(); }
   if (act === "xlsx-export") return exportExcel();
   if (t.id === "accNewPass") { $("#acc_pass").value = newPassword(); return; }
