@@ -1101,8 +1101,10 @@ function printReceipt(r, two){
   let el = $("#printArea"); if (!el) { el = document.createElement("div"); el.id = "printArea"; document.body.appendChild(el); }
   el.innerHTML = rcptHtml(r, two ? "Pro plátce" : "") + (two ? `<div class="pd-cut"></div>` + rcptHtml(r, "Pro centrum") : "");
   document.body.classList.add("printing");
-  setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); }, 60);
+  const imgs = [...el.querySelectorAll("img")].map(i => i.complete && i.naturalWidth ? Promise.resolve() : new Promise(r => { i.onload = i.onerror = r; }));
+  Promise.race([Promise.all(imgs), new Promise(r => setTimeout(r, 4000))]).then(() => setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); }, 60));
 }
+const LOGO = new Image(); LOGO.src = "logo.png";
 function receiptDlg(id, sid){
   const ex = id ? S.receipts.find(r => r.id === id) : null; if (id && !ex) return;
   const o = rc();
