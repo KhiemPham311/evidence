@@ -141,6 +141,18 @@ h2 .sub{font-weight:400}
 .pd-g{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 8mm;margin-top:2mm}.pd-g .w{grid-column:1/-1}.pd-g .amt{font-size:13pt}
 .pd-sig{display:grid;grid-template-columns:1fr 1fr;gap:2mm 8mm;margin-top:3mm}
 .pd-cut{border-top:1px dashed #aaa;margin:1mm 0}
+.od{position:relative;box-sizing:border-box;height:279mm;overflow:hidden;padding:2mm 8mm;font-size:10pt;line-height:1.45;color:#111;break-after:page;page-break-after:always}
+.od:last-child{break-after:auto;page-break-after:auto}
+.od i{font-style:normal;color:#1d3fa6;font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;font-size:11pt}
+.od .o{display:inline-block;border:1.6px solid #1d3fa6;border-radius:50%;padding:0 3px;margin:-2px -1px;line-height:1.15}
+.od .f{border-bottom:1px dotted #999;min-height:1.2em;display:inline-block;padding:0 2mm}.od .f.m{min-width:40mm}.od .f.c{min-width:35mm;text-align:center}
+.od-h{display:flex;justify-content:space-between;align-items:flex-start;gap:6mm;margin-bottom:2mm}.od-h h1{font-size:16pt;margin:0}.od-sub{font-size:12pt}
+.od-r{display:grid;grid-template-columns:auto 1fr auto 32mm;gap:3mm;align-items:baseline}
+.od-r2{display:grid;grid-template-columns:auto 1fr auto 40mm;gap:3mm;align-items:baseline;margin:2mm 0}
+.od-gap{margin-top:2.5mm}.od .gap{display:inline-block;width:6mm}
+.od-g{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 8mm;margin:2mm 0}
+.od p{margin:2mm 0;text-align:justify}.od-b{font-weight:700;margin-top:3mm}.od-line{margin:3mm 0}
+.od-sig{display:flex;flex-direction:column;gap:5mm;margin-top:5mm}
 .r-exp{grid-template-columns:5.5rem minmax(0,1fr) minmax(0,1.6fr) 7rem}
 .cats{display:grid;gap:2px;padding:6px 0}
 .cat{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) 6.5rem;gap:10px;align-items:center;padding:7px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px}
@@ -1097,9 +1109,69 @@ function rcptHtml(r, tag){
     <div class="pd-sig"><span>Podpis pokladníka:</span><span>Podpis účetní:</span><span>Schválil:</span><span></span><span>Podpis plátce/objednatele:</span><span>Podpis příjemce/dodavatele:</span></div>
   </section>`;
 }
+function rcptIsFirst(R){
+  return R.items.some(it => !it.sid ? false : !S.receipts.some(r => r.id !== R.id && r.items.some(i => i.sid === it.sid))
+    && !Object.entries(S.payments).some(([ym, m]) => ym < R.ym && Number((m[it.sid] || {}).paid) > 0));
+}
+const ORDER_TXT = {
+  cs: {title:"Objednávka – Závazná přihláška", sub:"na skupinový jazykový kurz firmy/spolku:", stamp:"(razítko)", payerL:"Objednatel kurzu a zároveň plátce kurzovného:", name:"Příjmení a jméno:", birth:"Datum narození:",
+    partL:"Účastník kurzu v případě, že se nejedná o objednatele (v případě nezletilých):", vs:"Variabilní symbol kurzu:", proj:"Číslo projektu u dodavatele, pokud existuje:",
+    purpose:"Účel platby: Kurz češtiny", douc:"DOUČ:", other:"jiné:", city:"Město:", room:"Učebna:", start:"Datum zahájení:", end:"Datum ukončení, pokud je předem plánováno:", hours:"Počet hodin výuky (1 hodina = 60 minut):", days:"Dny výuky:",
+    p1:`Já, objednatel, se podpisem této objednávky – závazné přihlášky, závazně přihlašuji k výše specifikovanému kurzu dodavatele. Předem jsem se seznámil s všeobecnými obchodními podmínkami dodavatele a v nich uvedenými zásady zpracování osobních údajů (GDPR) (http://sea-l.cz/media/2359/vseobecne-obchodni-podminky_jazykove-kurzy_cz_vn.pdf) a souhlasím s nimi bez výhrady. Podmínkám jsem porozuměl a podmínky tímto přijímám.`,
+    p2:`Tímto uděluji svůj souhlas k pořizování fotografií, audio a videozáznamů a rozhovorů svého dítěte – mé osoby (viz výše) dodavatelem, za účelem použití a zveřejnění celých nebo částečných pořízených nahrávek a fotografií pro účely výroby a zveřejnění propagačních a metodických materiálů organizace dodavatele.`,
+    p3:`Zároveň zde svým podpisem stvrzuji, že jsem uhradil kurzovné v hotovosti na místě podpisu tohoto dokumentu za přítomnosti dodavatele. A to na základě příjmového dokladu:`,
+    paid:"Placeno", transfer:"Převodem", cash:"Hotově", rno:"Příjmový doklad číslo:", issued:"Datum vystavení:", att:"Přílohy:", total:"Celkem částka:", words:"Celkem částka (slovy):", inA:"V", onA:"dne",
+    signName:"Příjmení a jméno objednatele:", signP:"Podpis objednatele:",
+    p4:`Dodavatel svým podpisem níže stvrzuje přijetí této objednávky – závazné přihlášky a zároveň přijetí kurzovného od objednatele. Tímto je smlouva o poskytnutí jazykových kurzů mezi objednatelem a dodavatelem uzavřena.`,
+    supName:"Příjmení a jméno zástupce dodavatele:", supP:"Podpis dodavatele:", cashier:"Podpis pokladníka:", acc:"Podpis účetní:", appr:"Schválil:"},
+  vi: {title:"Đơn đặt dịch vụ - đơn đăng ký ràng buộc", sub:"cho khóa học tiếng nhóm của công ty/hội đoàn:", stamp:"(con dấu)", payerL:"Đối tượng đăng ký học và đồng thời là đối tượng trả học phí:", name:"Họ và tên:", birth:"Ngày sinh:",
+    partL:"Người tham gia khóa học trong trường hợp không phải là đối tượng đăng ký (ví dụ trẻ vị thành niên):", vs:"Mã phân biệt của khóa học:", proj:"Mã số dự án của bên cung cấp dịch vụ, nếu có:",
+    purpose:"Mục đích thanh toán: Khóa học tiếng Séc", douc:"DOUČ:", other:"khác:", city:"Thành phố:", room:"Lớp học:", start:"Ngày khai lớp:", end:"Ngày kết thúc khóa học, nếu có kế hoạch:", hours:"Số lượng giờ học (1 giờ = 60 phút):", days:"Các ngày học:",
+    p1:`Tôi, đối tượng đăng ký, với chữ ký của mình trên Đơn đặt dịch vụ - đơn đăng ký ràng buộc, cam kết đăng ký vào khóa học cụ thể nêu trên của bên cung cấp dịch vụ. Tôi đã làm quen với các quy định chung của bên cung cấp dịch vụ và những nguyên tắc xử lý dữ liệu cá nhân (GDPR) trong các quy định này (http://sea-l.cz/vi/cung-cap/day-tieng-sec-cho-nguoi-viet/) và tôi hoàn toàn đồng ý. Tôi hiểu các quy định này và chấp nhận chúng.`,
+    p2:`Tôi đồng ý con tôi - tôi (nêu trên) được chụp ảnh, ghi âm, quay video và phỏng vấn và sử dụng toàn bộ hoặc một phần tài liệu đã được ghi và quay về với mục đích sản xuất và xuất bản tài liệu công cộng và quảng cáo của tổ chức cáp dịch vụ.`,
+    p3:`Đồng thời bằng chữ ký của mình ở đây tôi xác nhận là tôi đã thanh toán học phí bằng tiền mặt tại nơi ký văn bản này với sự có mặt của bên cung cấp dịch vụ. Cụ thể theo phiếu thu:`,
+    paid:"", transfer:"", cash:"", rno:"Số phiếu thu:", issued:"Ngày lập phiếu:", att:"Phụ lục:", total:"Tổng tiền:", words:"Tổng tiền (bằng chữ):", inA:"Tại", onA:"ngày",
+    signName:"Họ và tên đối tượng sử dụng dịch vụ:", signP:"Chữ ký của đối tượng sử dụng dịch vụ:",
+    p4:`Bằng chữ ký của mình ở dưới đây bên cung cấp dịch vụ xác nhận đã nhận Đơn đặt dịch vụ - đơn đăng ký ràng buộc và đồng thời đã nhận tiền học phí từ đối tượng đăng ký học. Và qua đây hợp đồng cung cấp dịch vụ dạy tiếng giữa đối tượng đăng ký và bên cung cấp dịch vụ được ký kết.`,
+    supName:"Họ và tên đại diện bên cung cấp dịch vụ:", supP:"Chữ ký bên cung cấp dịch vụ:", cashier:"Chữ ký thủ quỹ:", acc:"Chữ ký kế toán:", appr:"Duyệt"}
+};
+function orderHtml(r, lang, tag){
+  const T = ORDER_TXT[lang], o = rc(), circ = (v, on) => on ? `<span class="o">${esc(v)}</span>` : esc(v);
+  const names = r.items.map(i => i.name).join(" + "), part = names && lc(names) !== lc(r.payer) ? names : "";
+  const total = r.items.reduce((a, i) => a + (Number(i.amount) || 0), 0);
+  const vsTxt = r.vs.map(n => { const v = vsList().find(x => x.num === n); return v ? `${n} (${v.label})` : n; }).join(", ");
+  const codes = listOf(o.codes).map(c => circ(lang === "vi" && c === "MŠ" ? "MG" : c, r.codes.includes(c))).join(", ");
+  const f = (v, cls = "") => `<i class="f ${cls}">${esc(v || "")}</i>`;
+  return `<section class="od">${tag ? `<div class="pd-tag">${esc(tag)}</div>` : ""}
+    <div class="od-h"><div><h1>${T.title}</h1><div class="od-sub">${T.sub} ${T.stamp}</div></div><img class="pd-logo" src="logo.png" alt="SEA-l"></div>
+    <div>${T.payerL}</div>
+    <div class="od-r"><span>${T.name}</span>${f(r.payer)}<span>${T.birth}</span>${f(r.payerBirth, "s")}</div>
+    <div class="od-gap">${T.partL}</div>
+    <div class="od-r"><span>${T.name}</span>${f(part)}<span>${T.birth}</span>${f(r.birth, "s")}</div>
+    <div class="od-r od-gap"><span>${T.vs}</span>${f(vsTxt)}<span>${T.proj}</span>${f("", "s")}</div>
+    <div>${T.purpose} ${codes} <span class="gap"></span>${T.douc} ${listOf(o.douc).map(c => circ(c, r.douc.includes(c))).join(", ")}, ${T.other} ${f(r.other, "m")}</div>
+    <div class="od-g">
+      <span>${T.city} <i>${esc(r.city)}</i></span><span>${T.room} <i>${esc(r.room)}</i></span>
+      <span>${T.start} <i>${esc(rcptDate(r.start))}</i></span><span>${T.end} <i>${esc(rcptDate(r.end))}</i></span>
+      <span>${T.hours} <i>${esc(r.hours)}</i></span><span>${T.days} <i>${esc(r.days)}</i></span>
+    </div>
+    <p>${T.p1}</p><p>${T.p2}</p><p>${T.p3}</p>
+    <div class="od-b">${T.paid ? `${T.paid} ${T.transfer}/<span class="o">${T.cash}</span>: ` : ""}${T.rno} <i>${esc(r.no)}</i></div>
+    <div class="od-g">
+      <span>${T.issued} <i>${esc(rcptDate(r.date))}</i></span><span>${T.att}</span>
+      <span>${T.total} <i>${esc(kc(total))}</i></span><span>${T.words} <i>${esc(czWords(total))}</i></span>
+    </div>
+    <div class="od-line">${T.inA} ${f(r.city, "c")} ${T.onA} ${f(rcptDate(r.date), "c")}</div>
+    <div class="od-r2"><span>${T.signName}</span>${f(r.payer)}<span>${T.signP}</span><i class="f s"></i></div>
+    <p>${T.p4}</p>
+    <div class="od-r2"><span>${T.supName}</span>${f("")}<span>${T.supP}</span><i class="f s"></i></div>
+    <div class="od-sig"><span>${T.cashier}</span><span>${T.acc}</span><span>${T.appr}</span></div>
+  </section>`;
+}
 function printReceipt(r, two){
   let el = $("#printArea"); if (!el) { el = document.createElement("div"); el.id = "printArea"; document.body.appendChild(el); }
-  el.innerHTML = rcptHtml(r, two ? "Pro plátce" : "") + (two ? `<div class="pd-cut"></div>` + rcptHtml(r, "Pro centrum") : "");
+  if (r.kind === "order") { const one = tag => orderHtml(r, "cs", tag) + (r.withVi === false ? "" : orderHtml(r, "vi", tag)); el.innerHTML = one(two ? "Pro objednatele" : "") + (two ? one("Pro centrum") : ""); }
+  else el.innerHTML = rcptHtml(r, two ? "Pro plátce" : "") + (two ? `<div class="pd-cut"></div>` + rcptHtml(r, "Pro centrum") : "");
   document.body.classList.add("printing");
   const imgs = [...el.querySelectorAll("img")].map(i => i.complete && i.naturalWidth ? Promise.resolve() : new Promise(r => { i.onload = i.onerror = r; }));
   Promise.race([Promise.all(imgs), new Promise(r => setTimeout(r, 4000))]).then(() => setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); }, 60));
@@ -1112,6 +1184,8 @@ function receiptDlg(id, sid){
   if (!ex) { const s = sid && student(sid); if (s) { R.items.push(rcptItem(s, R.ym)); R.payer = s.parent || s.name; } R.no = nextRcptNo(R.date); Object.assign(R, rcptDerive(R)); }
   const touched = new Set(ex ? ["codes","vs","days","hours","start"] : []);
   let pay = !ex;
+  if (!R.kind) R.kind = !ex && rcptIsFirst(R) ? "order" : "receipt";
+  let kindTouched = !!ex;
   const kidOpts = () => { const cur = new Set(R.items.map(i => i.sid)), first = student(R.items[0]?.sid);
     const sib = s => first && s.id !== first.id && ((first.parent && lc(s.parent) === lc(first.parent)) || (first.phone && String(s.phone||"").replace(/\D/g,"") === String(first.phone).replace(/\D/g,"")));
     const rest = S.students.filter(s => !cur.has(s.id) && (s.status !== "neaktivni" || sib(s))).sort(byName), sibs = rest.filter(sib), others = rest.filter(s => !sib(s));
@@ -1139,7 +1213,10 @@ function receiptDlg(id, sid){
       <label>Učebna<input type="text" id="r_room" value="${esc(R.room)}" autocomplete="off"></label>
       <div class="full rtotal"><b id="r_total">${kc(total())}</b><span id="r_words">${esc(czWords(total()))}</span></div>
       ${!ex && R.items.length ? `<label class="full chk"><input type="checkbox" id="r_pay"${pay && unpaid ? " checked" : ""}> Zapsat částky do plateb za ${ymLabel(R.ym).toLowerCase()} jako zaplacené hotově${unpaid ? "" : " (už je zaplaceno)"}</label>` : ""}
-      <label class="full chk"><input type="checkbox" id="r_two" checked> Tisknout 2× na jednu stránku A4 (pro plátce a pro centrum)</label>
+      <div class="full lbl">Tisknout jako<div class="chips"><button type="button" class="chip" data-kind="order" aria-pressed="${R.kind === "order"}">Objednávka – závazná přihláška</button><button type="button" class="chip" data-kind="receipt" aria-pressed="${R.kind !== "order"}">Příjmový doklad</button></div>
+        <span class="hint">${R.kind === "order" ? "První platba dítěte: tiskne se objednávka (česká a vietnamská strana) s číslem dokladu." : "Další platba: tiskne se příjmový doklad."}</span></div>
+      ${R.kind === "order" ? `<label class="full chk"><input type="checkbox" id="r_vi"${R.withVi === false ? "" : " checked"}> Přidat vietnamskou stranu</label>` : ""}
+      <label class="full chk"><input type="checkbox" id="r_two" checked> ${R.kind === "order" ? "Tisknout 2 kopie (pro objednatele a pro centrum)" : "Tisknout 2× na jednu stránku A4 (pro plátce a pro centrum)"}</label>
     </form><p class="err" id="r_err"></p>
     <div class="actions">${ex ? `<button class="btn danger left" id="r_del">Smazat</button>` : ""}<button class="btn" id="r_cancel">Zavřít</button><button class="btn" id="r_save">Uložit</button><button class="btn primary" id="r_print">Uložit a vytisknout</button></div>`, "#r_payer");
     const bind = (sel, key, isTouched) => { const el = $(sel); el.oninput = () => { R[key] = el.value; if (isTouched) touched.add(key); }; };
@@ -1148,9 +1225,11 @@ function receiptDlg(id, sid){
     $("#r_date").oninput = () => { R.date = $("#r_date").value; };
     $$("#dialog [data-ri]").forEach(el => el.oninput = () => { R.items[Number(el.dataset.ri)].amount = el.value === "" ? "" : Number(el.value); $("#r_total").textContent = kc(total()); $("#r_words").textContent = czWords(total()); });
     $$("#dialog [data-rdel]").forEach(el => el.onclick = () => { R.items.splice(Number(el.dataset.rdel), 1); rederive(); draw(); });
-    $("#r_add").onchange = () => { const s = student($("#r_add").value); if (!s) return; const wasEmpty = !R.items.length; R.items.push(rcptItem(s, R.ym)); if (wasEmpty && !R.payer) R.payer = s.parent || s.name; rederive(); draw(); };
+    $("#r_add").onchange = () => { const s = student($("#r_add").value); if (!s) return; const wasEmpty = !R.items.length; R.items.push(rcptItem(s, R.ym)); if (wasEmpty && !R.payer) R.payer = s.parent || s.name; rederive(); if (!kindTouched) R.kind = rcptIsFirst(R) ? "order" : "receipt"; draw(); };
     $$("#dialog [data-rk]").forEach(el => el.onclick = () => { const k = el.dataset.rk, v = el.dataset.v; R[k] = R[k].includes(v) ? R[k].filter(x => x !== v) : [...R[k], v]; touched.add(k); el.setAttribute("aria-pressed", R[k].includes(v)); });
     if ($("#r_pay")) $("#r_pay").onchange = () => { pay = $("#r_pay").checked; };
+    $$("#dialog [data-kind]").forEach(el => el.onclick = () => { R.kind = el.dataset.kind; kindTouched = true; draw(); });
+    if ($("#r_vi")) $("#r_vi").onchange = () => { R.withVi = $("#r_vi").checked; };
     $("#r_cancel").onclick = closeDlg;
     const save = andPrint => {
       if (!R.payer.trim()) { $("#r_err").textContent = "Vyplň plátce."; return null; }
@@ -1181,7 +1260,7 @@ function receiptList(ym){
   const list = S.receipts.filter(r => r.ym === ym || String(r.date || "").slice(0,7) === ym).sort((a, b) => String(b.no).localeCompare(String(a.no), "cs", {numeric:true}));
   return `<h2>Příjmové doklady za ${ymLabel(ym).toLowerCase()} <span class="sub">${list.length ? kc(list.reduce((a, r) => a + (Number(r.total) || 0), 0)) : ""}</span></h2>` +
     (list.length ? `<div class="sheet">${list.map(r => `<div class="row click r-rcpt" data-rcpt="${r.id}" tabindex="0" role="button"><span class="num">${esc(r.no)}</span><span class="num c-date">${r.date ? dateLabel(r.date) : ""}</span>
-      <span><span class="name">${esc(r.payer)}</span>${r.items.length && r.items.map(i => i.name).join(" + ") !== r.payer ? `<div class="sub">${esc(r.items.map(i => i.name).join(" + "))}</div>` : ""}</span>
+      <span><span class="name">${esc(r.payer)}</span>${r.kind === "order" ? ` <span class="pill tag">objednávka</span>` : ""}${r.items.length && r.items.map(i => i.name).join(" + ") !== r.payer ? `<div class="sub">${esc(r.items.map(i => i.name).join(" + "))}</div>` : ""}</span>
       <span class="money name">${kc(r.total)}</span><span><button class="btn small" data-rprint="${r.id}">Vytisknout</button></span></div>`).join("")}</div>`
       : `<div class="sheet"><div class="empty">Zatím žádné doklady. Doklad vystavíš tlačítkem „Doklad“ u dítěte nebo „+ Příjmový doklad“ nahoře.</div></div>`);
 }
