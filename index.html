@@ -153,6 +153,15 @@ h2 .sub{font-weight:400}
 .od-g{display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 8mm;margin:2mm 0}
 .od p{margin:2mm 0;text-align:justify}.od-b{font-weight:700;margin-top:3mm}.od-line{margin:3mm 0}
 .od-sig{display:flex;flex-direction:column;gap:5mm;margin-top:5mm}
+.as{box-sizing:border-box;padding:2mm 4mm;color:#111;font-size:10pt;break-after:page;page-break-after:always}.as:last-child{break-after:auto;page-break-after:auto}
+.as-h{display:flex;justify-content:space-between;align-items:flex-start;gap:6mm;margin-bottom:4mm}.as-h h1{font-size:16pt;margin:0}.as-sub{font-size:10.5pt;color:#333;margin-top:1mm}
+.as-t{width:100%;border-collapse:collapse;table-layout:fixed}
+.as-t th,.as-t td{border:1px solid #555;height:8.5mm;text-align:center;vertical-align:middle;padding:0 1mm;font-size:10pt;overflow:hidden}
+.as-t th{background:#f1ede7;font-size:9pt;line-height:1.15}.as-t th small{display:block;font-weight:400;color:#444}
+.as-t .nm{text-align:left;white-space:nowrap;text-overflow:ellipsis}.as-t .n{color:#555;font-size:9pt}.as-t .sm{font-size:9pt}
+.as-t tfoot td{height:12mm}.as-t tfoot .nt{font-size:7.5pt;line-height:1.1;height:auto;padding:1mm}
+.as-t .m-P{font-size:12pt}.as-t .m-N{font-size:12pt;color:#b3261e}.as-t .m-O{font-weight:700;color:#555}
+.as-leg{margin-top:3mm;font-size:9pt;color:#444}
 .r-exp{grid-template-columns:5.5rem minmax(0,1fr) minmax(0,1.6fr) 7rem}
 .cats{display:grid;gap:2px;padding:6px 0}
 .cat{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) 6.5rem;gap:10px;align-items:center;padding:7px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px}
@@ -657,7 +666,7 @@ const TOOLS = {
     <div class="bar"><div class="chips" id="fStatus">${[["aktivni","Aktivní"],["neaktivni","Neaktivní"],["","Všichni"]].map(([v,l]) => `<button class="chip" data-v="${v}" aria-pressed="${U.status===v}">${l}</button>`).join("")}</div></div>`,
   kurzy: () => `<div class="bar"><span class="grow"></span><button class="btn primary" id="addCourse">+ Přidat kurz</button></div>`,
   dochazka: () => `<div class="bar"><div class="w"><input type="date" id="date" value="${U.date}" aria-label="Datum lekce"></div>
-      <button class="btn" data-day="-1">Předchozí den</button><button class="btn" data-day="0">Dnes</button><button class="btn" data-day="1">Další den</button></div>`,
+      <button class="btn" data-day="-1">Předchozí den</button><button class="btn" data-day="0">Dnes</button><button class="btn" data-day="1">Další den</button><span class="grow"></span><button class="btn" data-act="att-print">Vytisknout docházku</button></div>`,
   platby: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn" data-act="xlsx-export">Stáhnout Excel</button><button class="btn primary" data-act="rcpt-new">+ Příjmový doklad</button></div>`,
   vydaje: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addExp">+ Přidat účet nebo nákup</button></div>`,
   ucitele: () => `<div class="bar">${monthNav()}<span class="grow"></span><button class="btn primary" id="addTeacher">+ Přidat učitele</button></div>`,
@@ -1167,6 +1176,56 @@ function orderHtml(r, lang, tag){
     <div class="od-r2"><span>${T.supName}</span>${f("")}<span>${T.supP}</span><i class="f s"></i></div>
     <div class="od-sig"><span>${T.cashier}</span><span>${T.acc}</span><span>${T.appr}</span></div>
   </section>`;
+}
+/* ---------- Tisk docházky ---------- */
+function printHtml(html){
+  let el = $("#printArea"); if (!el) { el = document.createElement("div"); el.id = "printArea"; document.body.appendChild(el); }
+  el.innerHTML = html; document.body.classList.add("printing");
+  const imgs = [...el.querySelectorAll("img")].map(i => i.complete && i.naturalWidth ? Promise.resolve() : new Promise(r => { i.onload = i.onerror = r; }));
+  Promise.race([Promise.all(imgs), new Promise(r => setTimeout(r, 4000))]).then(() => setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); }, 60));
+}
+function attSheetHtml(c, ym, filled, extra){
+  const all = [...Array(daysIn(ym))].map((_, i) => `${ym}-${pad(i + 1)}`);
+  const dates = all.filter(d => c.days.includes(dowOf(d)) || (S.attendance[d] && S.attendance[d][c.id]));
+  const marked = new Set(); dates.forEach(d => Object.entries((S.attendance[d]?.[c.id] || {}).marks || {}).forEach(([sid, v]) => { if (v) marked.add(sid); }));
+  const kids = S.students.filter(s => (s.courses.includes(c.id) && inMonth(s, ym)) || marked.has(s.id)).sort(byName);
+  const sym = {P:"✓", N:"✗", O:"O"};
+  const cell = (s, d) => { if (!filled) return ""; const v = (S.attendance[d]?.[c.id]?.marks || {})[s.id]; return v ? `<span class="m-${v}">${sym[v]}</span>` : ""; };
+  const sum = s => { if (!filled) return ""; const vs = dates.map(d => (S.attendance[d]?.[c.id]?.marks || {})[s.id]).filter(Boolean); return vs.length ? `${vs.filter(v => v === "P").length}/${vs.length}` : ""; };
+  const tchs = tNames(cT(c)) || "";
+  const rows = kids.map((s, i) => `<tr><td class="n">${i + 1}</td><td class="nm">${esc(s.name)}</td>${dates.map(d => `<td>${cell(s, d)}</td>`).join("")}<td class="sm">${sum(s)}</td></tr>`).join("")
+    + [...Array(extra)].map((_, i) => `<tr><td class="n">${kids.length + i + 1}</td><td class="nm"></td>${dates.map(() => "<td></td>").join("")}<td class="sm"></td></tr>`).join("");
+  const notes = dates.map(d => esc((S.attendance[d]?.[c.id] || {}).note || ""));
+  return `<section class="as">
+    <div class="as-h"><div><h1>Docházka – ${esc(c.name)}</h1><div class="as-sub">${esc(ymLabel(ym))} · ${esc(c.days.map(d => DAYS_SHORT[d - 1]).join(", "))} ${esc(c.start || "")}${c.end ? "–" + esc(c.end) : ""}${c.room ? " · " + esc(c.room) : ""}${tchs ? " · " + esc(tchs) : ""}</div></div><img class="pd-logo" src="logo.png" alt="SEA-l"></div>
+    <table class="as-t"><colgroup><col style="width:7mm"><col style="width:52mm">${dates.map(() => "<col>").join("")}<col style="width:14mm"></colgroup>
+      <thead><tr><th>#</th><th class="nm">Jméno</th>${dates.map(d => `<th>${Number(d.slice(8))}. ${Number(d.slice(5,7))}.<small>${DAYS_SHORT[dowOf(d) - 1]}</small></th>`).join("")}<th>Účast</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="${dates.length + 3}" class="nm">V kurzu nejsou v tomto měsíci žádné děti.</td></tr>`}</tbody>
+      <tfoot><tr><td></td><td class="nm">Podpis lektora</td>${dates.map(() => "<td class='sig'></td>").join("")}<td></td></tr>
+        ${filled && notes.some(Boolean) ? `<tr><td></td><td class="nm">Poznámka</td>${notes.map(n => `<td class="nt">${n}</td>`).join("")}<td></td></tr>` : ""}</tfoot></table>
+    <div class="as-leg">✓ přítomen · ✗ chybí · O omluven${filled ? "" : " · zapisuj do políček"}</div>
+  </section>`;
+}
+function attPrintDlg(){
+  let ym = String(U.date || todayStr).slice(0,7), filled = true, extra = 2;
+  const cs = coursesSorted().filter(c => c.active !== false); let pick = new Set(cs.map(c => c.id));
+  const draw = () => {
+    openDlg(`<h3 id="dlgTitle">Vytisknout docházku</h3><form class="form" id="f" novalidate>
+      <label>Měsíc<input type="month" id="ap_ym" value="${ym}"></label>
+      <label>Prázdné řádky navíc<input type="number" id="ap_extra" min="0" max="10" value="${extra}" inputmode="numeric"></label>
+      <div class="full lbl">Kurzy (každý na vlastní stránce)<div class="chips">${cs.map(c => `<button type="button" class="chip" data-apc="${c.id}" aria-pressed="${pick.has(c.id)}">${esc(c.name)}</button>`).join("")}</div></div>
+      <label class="full chk"><input type="checkbox" id="ap_fill"${filled ? " checked" : ""}> Vyplnit docházku, která už je v appce zapsaná</label>
+    </form><p class="err" id="ap_err"></p>
+    <div class="actions"><button class="btn" id="ap_cancel">Zavřít</button><button class="btn primary" id="ap_go">Vytisknout</button></div>`, "#ap_ym");
+    $("#ap_ym").onchange = () => { ym = $("#ap_ym").value || ym; };
+    $("#ap_extra").oninput = () => { extra = Math.max(0, Math.min(10, Number($("#ap_extra").value) || 0)); };
+    $("#ap_fill").onchange = () => { filled = $("#ap_fill").checked; };
+    $$("#dialog [data-apc]").forEach(el => el.onclick = () => { const id = el.dataset.apc; pick.has(id) ? pick.delete(id) : pick.add(id); el.setAttribute("aria-pressed", pick.has(id)); });
+    $("#ap_cancel").onclick = closeDlg;
+    $("#ap_go").onclick = () => { const sel = cs.filter(c => pick.has(c.id)); if (!sel.length) { $("#ap_err").textContent = "Vyber aspoň jeden kurz."; return; }
+      closeDlg(); printHtml(sel.map(c => attSheetHtml(c, ym, filled, extra)).join("")); };
+  };
+  draw();
 }
 function printReceipt(r, two){
   let el = $("#printArea"); if (!el) { el = document.createElement("div"); el.id = "printArea"; document.body.appendChild(el); }
@@ -1780,6 +1839,7 @@ document.addEventListener("click", e => {
   const act = t.dataset.act;
   if (act === "import") return $("#importFile").click();
   if (act === "rcpt-new") return receiptDlg(null, null);
+  if (act === "att-print") return attPrintDlg();
   if (act === "rcptcfg") { const v = id => $(id).value.trim(); return commit(D => { D.settings.receipt = {org:v("#rc_org"), code:v("#rc_code"), city:v("#rc_city"), room:v("#rc_room"), vs:v("#rc_vs"), codes:v("#rc_codes"), douc:v("#rc_douc")}; }), toast("Nastavení dokladu uloženo."); }
   if (act === "xlsx-import") { loadXLSX().catch(() => {}); return $("#xlsxFile").click(); }
   if (act === "xlsx-export") return exportExcel();
